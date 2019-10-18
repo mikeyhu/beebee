@@ -20,26 +20,23 @@ public:
     }
 
     void run() {
-        bool metBRK = false;
-        while (!metBRK) {
-            switch (memory[programCounter]) {
+        for (;;) {
+            switch (memory[programCounter++]) {
                 case BRK :
-                    metBRK = true;
-                    break;
+                    return;
                 case LDA_I :
-                    ARegister = memory[++programCounter];
+                    ARegister = memory[programCounter++];
                     break;
                 case LDX_I :
-                    XRegister = memory[++programCounter];
+                    XRegister = memory[programCounter++];
                     break;
                 case LDY_I :
-                    YRegister = memory[++programCounter];
+                    YRegister = memory[programCounter++];
                     break;
                 case STA_Z :
-                    memory[memory[++programCounter]] = ARegister;
+                    memory[memory[programCounter++]] = ARegister;
                     break;
             }
-            programCounter++;
         }
     }
 
