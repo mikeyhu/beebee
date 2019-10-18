@@ -48,7 +48,7 @@ enum OpCode {
     BVS_Re = 0x70,          // BVS $NN Relative $70 - - - - - - -
 
     CLC = 0x18,             // CLC Implied $18 C- - - - - -
-    CLD = 0xd8,             // CLD Implied $d8 - - - D- - -
+    CLD = 0xd8,             // CLD Implied $d8 - - - D- - - Clear Decimal
     CLI = 0x58,             // CLI Implied $58 - - I- - - -
     CLV = 0xb8,             // CLV Implied $b8 - - - - - V-
 

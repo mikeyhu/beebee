@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <cstring>
 #include <array>
+#include <iostream>
 #include "OpCode.cpp"
 
 template<std::size_t SIZE>
@@ -11,6 +12,7 @@ class CPU {
     uint8_t YRegister = 0;
     uint8_t stackPointer = 0;
     uint16_t programCounter;
+    bool decimalFlag = false;
     std::array<uint8_t, SIZE> memory;
 
 public:
@@ -36,6 +38,15 @@ public:
                 case STA_Z :
                     memory[memory[programCounter++]] = ARegister;
                     break;
+                case CLD :
+                    decimalFlag = false;
+                    break;
+                case TXS :
+                    stackPointer = XRegister;
+                    break;
+                default:
+                    std::cout << "Unknown OpCode:" << std::hex << (int) memory[programCounter - 1] << std::endl;
+                    return;
             }
         }
     }
@@ -54,6 +65,22 @@ public:
 
     uint8_t getYRegister() const {
         return YRegister;
+    }
+
+    bool isDecimalFlag() const {
+        return decimalFlag;
+    }
+
+    void setDecimalFlag(bool decimalFlag) {
+        CPU::decimalFlag = decimalFlag;
+    }
+
+    uint8_t getStackPointer() const {
+        return stackPointer;
+    }
+
+    void setStackPointer(uint8_t stackPointer) {
+        CPU::stackPointer = stackPointer;
     }
 
     const std::array<uint8_t, SIZE> &getMemory() const {

@@ -44,3 +44,18 @@ TEST(CPUTest, STA_Z) {
     EXPECT_EQ(0x80,cpu.getARegister());
     EXPECT_EQ(0x80,cpu.getMemory()[5]);
 }
+
+TEST(CPUTest, CLD) {
+    std::array<uint8_t, 2> mem = {CLD, BRK};
+    auto cpu = CPU(0, mem);
+    cpu.setDecimalFlag(true);
+    cpu.run();
+    EXPECT_FALSE(cpu.isDecimalFlag());
+}
+
+TEST(CPUTest, TXS) {
+    std::array<uint8_t, 4> mem = {LDX_I, 0xff, TXS, BRK};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0xff,cpu.getStackPointer());
+}
