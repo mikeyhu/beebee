@@ -22,6 +22,7 @@ int main() {
 
     auto cpu = CPU(0x400, mem);
     cpu.run();
-    std::cout << "ProgramCounter:" << cpu.getProgramCounter() << std::endl;
+    std::cout << "ProgramCounter: " << cpu.getProgramCounter() << std::endl;
+    std::cout << "test_suite: [" << std::hex << cpu.getMemory()[0x0200] << "]" << std::endl;
     return 0;
 }

@@ -62,7 +62,7 @@ enum OpCode {
     CMP_IndirIndex = 0xd1,  // CMP ($NN),Y Indirect Indexed $d1 CZ- - - - N
 
     CPX_I = 0xe0,           // CPX #$NN Immediate $e0 CZ- - - - N
-    CPX_A = 0xec,           // CPX $NNNN Absolute $ec CZ- - - - N
+    CPX_Ab = 0xec,          // CPX $NNNN Absolute $ec CZ- - - - N
     CPX_Z = 0xe4,           // CPX $NN Zero Page $e4 CZ- - - - N
 
     CPY_I = 0xc0,           // CPY #$NN Immediate $c0 CZ- - - - N

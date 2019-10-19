@@ -94,9 +94,9 @@ class CPU {
         }
     }
 
-    void compareAccumulatorTo(uint8_t value) {
-        zeroFlag = value == ARegister;
-        carryFlag = ARegister >= value;
+    void compareRegisterTo(uint8_t reg, uint8_t value) {
+        zeroFlag = value == reg;
+        carryFlag = reg >= value;
     }
 
 public:
@@ -121,6 +121,26 @@ public:
                     programCounter = locationAbsolute();
                     break;
 
+                    // ADC : ADd with Carry
+                case ADC_I :
+                    addToARegister(readImmediate());
+                    break;
+                case ADC_Z :
+                    addToARegister(readZeroPage());
+                    break;
+                case ADC_ZX :
+                    addToARegister(readZeroPageX());
+                    break;
+                case ADC_Ab :
+                    addToARegister(readAbsoluteY());
+                    break;
+                case ADC_AbX :
+                    addToARegister(readAbsoluteX());
+                    break;
+                case ADC_AbY :
+                    addToARegister(readAbsoluteY());
+                    break;
+
                     // AND : bitwise AND with accumulator
                 case AND_I :
                     setARegister(ARegister & readImmediate());
@@ -140,6 +160,25 @@ public:
                 case AND_ZX :
                     setARegister(ARegister & readZeroPageX());
                     break;
+                    // AND : bitwise AND with accumulator
+                case EOR_I :
+                    setARegister(ARegister ^ readImmediate());
+                    break;
+                case EOR_Ab :
+                    setARegister(ARegister ^ readAbsolute());
+                    break;
+                case EOR_AbX :
+                    setARegister(ARegister ^ readAbsoluteX());
+                    break;
+                case EOR_AbY :
+                    setARegister(ARegister ^ readAbsoluteY());
+                    break;
+                case EOR_Z :
+                    setARegister(ARegister ^ readZeroPage());
+                    break;
+                case EOR_ZX :
+                    setARegister(ARegister ^ readZeroPageX());
+                    break;
 
                     // Branch
                 case BNE_Re : {
@@ -157,34 +196,48 @@ public:
 
                     // Compare
                 case CMP_I :
-                    compareAccumulatorTo(readImmediate());
+                    compareRegisterTo(ARegister, readImmediate());
                     break;
                 case CMP_Z :
-                    compareAccumulatorTo(readZeroPage());
+                    compareRegisterTo(ARegister, readZeroPage());
                     break;
                 case CMP_ZX :
-                    compareAccumulatorTo(readZeroPageX());
+                    compareRegisterTo(ARegister, readZeroPageX());
                     break;
                 case CMP_Ab :
-                    compareAccumulatorTo(readAbsolute());
+                    compareRegisterTo(ARegister, readAbsolute());
                     break;
                 case CMP_AbX :
-                    compareAccumulatorTo(readAbsoluteX());
+                    compareRegisterTo(ARegister, readAbsoluteX());
                     break;
                 case CMP_AbY :
-                    compareAccumulatorTo(readAbsoluteY());
+                    compareRegisterTo(ARegister, readAbsoluteY());
                     break;
-
                 case CPX_I :
-                    zeroFlag = readImmediate() == XRegister;
+                    compareRegisterTo(XRegister, readImmediate());
+                    break;
+                case CPX_Ab :
+                    compareRegisterTo(XRegister, readAbsolute());
+                    break;
+                case CPX_Z :
+                    compareRegisterTo(XRegister, readZeroPage());
+                    break;
+                case CPY_I :
+                    compareRegisterTo(YRegister, readImmediate());
+                    break;
+                case CPY_Ab :
+                    compareRegisterTo(YRegister, readAbsolute());
+                    break;
+                case CPY_Z :
+                    compareRegisterTo(YRegister, readZeroPage());
                     break;
 
                     //IN : INcremement
                 case INX :
-                    XRegister++;
+                    setXRegister(XRegister + 1);
                     break;
                 case INY :
-                    YRegister++;
+                    setYRegister(YRegister + 1);
                     break;
 
                     //DE : DEcremement
@@ -292,6 +345,8 @@ public:
                 case TXS :
                     stackPointer = XRegister;
                     break;
+                case NOP :
+                    break;
                 default:
                     std::cout << "Unknown OpCode:" << std::hex << (int) memory[programCounter - 1] << std::endl;
                     printState();
@@ -311,6 +366,16 @@ public:
 
     void setARegister(uint8_t aRegister) {
         ARegister = aRegister;
+        zeroFlag = ARegister == 0;
+        negativeFlag = ARegister >> 7 != 0;
+    }
+
+    void addToARegister(uint8_t b) {
+        int sum = ARegister + b;
+        if (sum > 0xff) {
+            carryFlag = 1;
+        }
+        ARegister = sum;
         zeroFlag = ARegister == 0;
         negativeFlag = ARegister >> 7 != 0;
     }
