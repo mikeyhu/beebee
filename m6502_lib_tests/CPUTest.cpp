@@ -296,6 +296,15 @@ TEST(CPUTest, DEX) {
     auto cpu = CPU(0, mem);
     cpu.run();
     EXPECT_EQ(0x01, cpu.getXRegister());
+    EXPECT_FALSE(cpu.isZeroFlag());
+}
+
+TEST(CPUTest, DEX_zeroflag) {
+    std::array<uint8_t, 4> mem = {LDX_I, 0x01, DEX, BRK};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0x00, cpu.getXRegister());
+    EXPECT_TRUE(cpu.isZeroFlag());
 }
 
 TEST(CPUTest, DEY) {
@@ -303,6 +312,14 @@ TEST(CPUTest, DEY) {
     auto cpu = CPU(0, mem);
     cpu.run();
     EXPECT_EQ(0x01, cpu.getYRegister());
+}
+
+TEST(CPUTest, DEY_zeroflag) {
+    std::array<uint8_t, 4> mem = {LDY_I, 0x01, DEY, BRK};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0x00, cpu.getYRegister());
+    EXPECT_TRUE(cpu.isZeroFlag());
 }
 
 // T Transfer
@@ -368,6 +385,14 @@ TEST(CPUTest, BNE_backwards) {
 
 TEST(CPUTest, BNE_forwards) {
     std::array<uint8_t, 16> mem = {LDX_I,0x08,CPX_I,0x07,BNE_Re,0x02,LDY_I,0x01,LDA_I,0x01,0x00};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0x00, cpu.getYRegister());
+    EXPECT_EQ(0x01, cpu.getARegister());
+}
+
+TEST(CPUTest, BEQ_forwards) {
+    std::array<uint8_t, 16> mem = {LDX_I,0x08,CPX_I,0x08,BEQ_Re,0x02,LDY_I,0x01,LDA_I,0x01,0x00};
     auto cpu = CPU(0, mem);
     cpu.run();
     EXPECT_EQ(0x00, cpu.getYRegister());

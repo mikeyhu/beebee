@@ -32,8 +32,9 @@ class CPU {
         return memory[programCounter++];
     }
 
-    uint8_t readOpCode() {
-        return readUInt8();
+    OpCode readOpCode() {
+        OpCode opCode = (OpCode) readUInt8();
+        return opCode;
     }
 
     uint8_t readImmediate() {
@@ -80,6 +81,17 @@ class CPU {
         return memory[locationAbsolute()];
     }
 
+    void branchIfTrue(bool check) {
+        uint8_t location = readImmediate(); //always read immediate to move counter anyway
+        if (check) {
+            if (location >= 0x80) {
+                programCounter = programCounter - 0x100 + location;
+            } else {
+                programCounter = programCounter + location;
+            }
+        }
+    }
+
 public:
     CPU(uint16_t programCounter, std::array<uint8_t, SIZE> memory) {
         this->programCounter = programCounter;
@@ -101,36 +113,34 @@ public:
 
                     // AND : bitwise AND with accumulator
                 case AND_I :
-                    ARegister = ARegister & readImmediate();
+                    setARegister(ARegister & readImmediate());
                     break;
                 case AND_Ab :
-                    ARegister = ARegister & readAbsolute();
+                    setARegister(ARegister & readAbsolute());
                     break;
                 case AND_AbX :
-                    ARegister = ARegister & readAbsoluteX();
+                    setARegister(ARegister & readAbsoluteX());
                     break;
                 case AND_AbY :
-                    ARegister = ARegister & readAbsoluteY();
+                    setARegister(ARegister & readAbsoluteY());
                     break;
                 case AND_Z :
-                    ARegister = ARegister & readZeroPage();
+                    setARegister(ARegister & readZeroPage());
                     break;
                 case AND_ZX :
-                    ARegister = ARegister & readZeroPageX();
+                    setARegister(ARegister & readZeroPageX());
                     break;
 
                     // Branch
                 case BNE_Re : {
-                    uint8_t location = readImmediate();
-                    if (!zeroFlag) {
-                        if(location >=0x80) {
-                            programCounter = programCounter - 0x100 + location;
-                        } else {
-                            programCounter = programCounter + location;
-                        }
-                    }
+                    branchIfTrue(!zeroFlag);
                     break;
                 }
+                case BEQ_Re : {
+                    branchIfTrue(zeroFlag);
+                    break;
+                }
+
                     // Compare
                 case CPX_I :
                     zeroFlag = readImmediate() == XRegister;
@@ -146,64 +156,64 @@ public:
 
                     //DE : DEcremement
                 case DEX :
-                    XRegister--;
+                    setXRegister(XRegister - 1);
                     break;
                 case DEY :
-                    YRegister--;
+                    setYRegister(YRegister - 1);
                     break;
 
                     // LDA : LoaD Accumulator
                 case LDA_I :
-                    ARegister = readImmediate();
+                    setARegister(readImmediate());
                     break;
                 case LDA_Ab :
-                    ARegister = readAbsolute();
+                    setARegister(readAbsolute());
                     break;
                 case LDA_AbX :
-                    ARegister = readAbsoluteX();
+                    setARegister(readAbsoluteX());
                     break;
                 case LDA_AbY :
-                    ARegister = readAbsoluteY();
+                    setARegister(readAbsoluteY());
                     break;
                 case LDA_Z :
-                    ARegister = readZeroPage();
+                    setARegister(readZeroPage());
                     break;
                 case LDA_ZX :
-                    ARegister = readZeroPageX();
+                    setARegister(readZeroPageX());
                     break;
 
                     // LDX : LoaD Xregister
                 case LDX_I :
-                    XRegister = readImmediate();
+                    setXRegister(readImmediate());
                     break;
                 case LDX_Ab :
-                    XRegister = readAbsolute();
+                    setXRegister(readAbsolute());
                     break;
                 case LDX_AbY :
-                    XRegister = readAbsoluteY();
+                    setXRegister(readAbsoluteY());
                     break;
                 case LDX_Z :
-                    XRegister = readZeroPage();
+                    setXRegister(readZeroPage());
                     break;
                 case LDX_ZX :
-                    XRegister = readZeroPageX();
+                    setXRegister(readZeroPageX());
                     break;
 
                     // LDY : LoaD Yregister
                 case LDY_I :
-                    YRegister = readImmediate();
+                    setYRegister(readImmediate());
                     break;
                 case LDY_Ab :
-                    YRegister = readAbsolute();
+                    setYRegister(readAbsolute());
                     break;
                 case LDY_AbX :
-                    YRegister = readAbsoluteX();
+                    setYRegister(readAbsoluteX());
                     break;
                 case LDY_Z :
-                    YRegister = readZeroPage();
+                    setYRegister(readZeroPage());
                     break;
                 case LDY_ZX :
-                    YRegister = readZeroPageX();
+                    setYRegister(readZeroPageX());
                     break;
 
                     //STA : STore Accumulator
@@ -235,16 +245,16 @@ public:
 
                     // T : Transfer
                 case TAX:
-                    XRegister = ARegister;
+                    setXRegister(ARegister);
                     break;
                 case TAY :
-                    YRegister = ARegister;
+                    setYRegister(ARegister);
                     break;
                 case TXA:
-                    ARegister = XRegister;
+                    setARegister(XRegister);
                     break;
                 case TYA:
-                    ARegister = YRegister;
+                    setARegister(YRegister);
                     break;
                 case TXS :
                     stackPointer = XRegister;
@@ -254,6 +264,7 @@ public:
                     printState();
                     return;
             }
+            printState();
         }
     }
 
@@ -265,12 +276,28 @@ public:
         return ARegister;
     }
 
+    void setARegister(uint8_t aRegister) {
+        ARegister = aRegister;
+        zeroFlag = ARegister == 0;
+    }
+
     uint8_t getXRegister() const {
         return XRegister;
     }
 
+    void setXRegister(uint8_t xRegister) {
+        XRegister = xRegister;
+        zeroFlag = XRegister == 0;
+
+    }
+
     uint8_t getYRegister() const {
         return YRegister;
+    }
+
+    void setYRegister(uint8_t yRegister) {
+        YRegister = yRegister;
+        zeroFlag = YRegister == 0;
     }
 
     bool isDecimalFlag() const {
