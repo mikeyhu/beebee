@@ -242,17 +242,79 @@ TEST(CPUTest, CLD) {
     EXPECT_FALSE(cpu.isDecimalFlag());
 }
 
-TEST(CPUTest, TXS) {
-    std::array<uint8_t, 4> mem = {LDX_I, 0xff, TXS, BRK};
-    auto cpu = CPU(0, mem);
-    cpu.run();
-    EXPECT_EQ(0xff, cpu.getStackPointer());
-}
-
 TEST(CPUTest, JMP_Ab) {
     std::array<uint8_t, 6> mem = {JMP_Ab, 0x00, 0x05, LDX_I, 0xff, BRK};
     auto cpu = CPU(0, mem);
     cpu.run();
     EXPECT_EQ(0x00, cpu.getXRegister());
     EXPECT_EQ(0x06, cpu.getProgramCounter());
+}
+
+// INcrement
+
+TEST(CPUTest, INX) {
+    std::array<uint8_t, 4> mem = {LDX_I, 0x01, INX, BRK};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0x02, cpu.getXRegister());
+}
+
+TEST(CPUTest, INY) {
+    std::array<uint8_t, 4> mem = {LDY_I, 0x01, INY, BRK};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0x02, cpu.getYRegister());
+}
+
+// DEcrement
+
+TEST(CPUTest, DEX) {
+    std::array<uint8_t, 4> mem = {LDX_I, 0x02, DEX, BRK};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0x01, cpu.getXRegister());
+}
+
+TEST(CPUTest, DEY) {
+    std::array<uint8_t, 4> mem = {LDY_I, 0x02, DEY, BRK};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0x01, cpu.getYRegister());
+}
+
+// T Transfer
+
+TEST(CPUTest, TAX) {
+    std::array<uint8_t, 4> mem = {LDA_I, 0x02, TAX, BRK};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0x02, cpu.getXRegister());
+}
+
+TEST(CPUTest, TAY) {
+    std::array<uint8_t, 4> mem = {LDA_I, 0x02, TAY, BRK};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0x02, cpu.getYRegister());
+}
+
+TEST(CPUTest, TXA) {
+    std::array<uint8_t, 4> mem = {LDX_I, 0x02, TXA, BRK};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0x02, cpu.getARegister());
+}
+
+TEST(CPUTest, TYA) {
+    std::array<uint8_t, 4> mem = {LDY_I, 0x02, TYA, BRK};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0x02, cpu.getARegister());
+}
+
+TEST(CPUTest, TXS) {
+    std::array<uint8_t, 4> mem = {LDX_I, 0xff, TXS, BRK};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0xff, cpu.getStackPointer());
 }

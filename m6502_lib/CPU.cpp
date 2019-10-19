@@ -81,6 +81,7 @@ public:
         for (;;) {
             switch (readUInt8()) {
                 case BRK :
+                    printState();
                     return;
                 case CLD :
                     decimalFlag = false;
@@ -107,6 +108,22 @@ public:
                     break;
                 case AND_ZX :
                     ARegister = ARegister & readZeroPageX();
+                    break;
+
+                    //IN : INcremement
+                case INX :
+                    XRegister++;
+                    break;
+                case INY :
+                    YRegister++;
+                    break;
+
+                    //DE : DEcremement
+                case DEX :
+                    XRegister--;
+                    break;
+                case DEY :
+                    YRegister--;
                     break;
 
                     // LDA : LoaD Accumulator
@@ -179,11 +196,26 @@ public:
                 case STA_ZX :
                     memory[locationZeroPageX()] = ARegister;
                     break;
+
+                    // T : Transfer
+                case TAX:
+                    XRegister = ARegister;
+                    break;
+                case TAY :
+                    YRegister = ARegister;
+                    break;
+                case TXA:
+                    ARegister = XRegister;
+                    break;
+                case TYA:
+                    ARegister = YRegister;
+                    break;
                 case TXS :
                     stackPointer = XRegister;
                     break;
                 default:
                     std::cout << "Unknown OpCode:" << std::hex << (int) memory[programCounter - 1] << std::endl;
+                    printState();
                     return;
             }
         }
@@ -223,5 +255,14 @@ public:
 
     const std::array<uint8_t, SIZE> &getMemory() const {
         return memory;
+    }
+
+    void printState() {
+        std::cout << "PC:" << std::hex << (int) programCounter
+                  << " SP:" << (int) stackPointer
+                  << " A:" << (int) ARegister
+                  << " X:" << (int) XRegister
+                  << " Y:" << (int) YRegister
+                  << std::endl;
     }
 };
