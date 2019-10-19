@@ -651,7 +651,7 @@ TEST(CPUBranch, BPL_if_negative) {
     EXPECT_EQ(0x01, cpu.getARegister());
 }
 
-TEST(CPUBranch, BCC_if_positive) {
+TEST(CPUBranch, BCC_if_true) {
     std::array<uint8_t, 16> mem = {BCC_Re, 0x02, LDY_I, 0x01, LDA_I, 0x01, 0x00};
     auto cpu = CPU(0, mem);
     cpu.setCarryFlag(true);
@@ -660,7 +660,7 @@ TEST(CPUBranch, BCC_if_positive) {
     EXPECT_EQ(0x01, cpu.getARegister());
 }
 
-TEST(CPUBranch, BCC_if_negative) {
+TEST(CPUBranch, BCC_if_false) {
     std::array<uint8_t, 16> mem = {BCC_Re, 0x02, LDY_I, 0x01, LDA_I, 0x01, 0x00};
     auto cpu = CPU(0, mem);
     cpu.setCarryFlag(false);
@@ -669,7 +669,7 @@ TEST(CPUBranch, BCC_if_negative) {
     EXPECT_EQ(0x01, cpu.getARegister());
 }
 
-TEST(CPUBranch, BCS_if_positive) {
+TEST(CPUBranch, BCS_if_true) {
     std::array<uint8_t, 16> mem = {BCS_Re, 0x02, LDY_I, 0x01, LDA_I, 0x01, 0x00};
     auto cpu = CPU(0, mem);
     cpu.setCarryFlag(true);
@@ -678,10 +678,28 @@ TEST(CPUBranch, BCS_if_positive) {
     EXPECT_EQ(0x01, cpu.getARegister());
 }
 
-TEST(CPUBranch, BCS_if_negative) {
+TEST(CPUBranch, BCS_if_false) {
     std::array<uint8_t, 16> mem = {BCS_Re, 0x02, LDY_I, 0x01, LDA_I, 0x01, 0x00};
     auto cpu = CPU(0, mem);
     cpu.setCarryFlag(false);
+    cpu.run();
+    EXPECT_EQ(0x01, cpu.getYRegister());
+    EXPECT_EQ(0x01, cpu.getARegister());
+}
+
+TEST(CPUBranch, BMI_if_true) {
+    std::array<uint8_t, 16> mem = {BMI_Re, 0x02, LDY_I, 0x01, LDA_I, 0x01, 0x00};
+    auto cpu = CPU(0, mem);
+    cpu.setNegativeFlag(true);
+    cpu.run();
+    EXPECT_EQ(0x00, cpu.getYRegister());
+    EXPECT_EQ(0x01, cpu.getARegister());
+}
+
+TEST(CPUBranch, BMI_if_false) {
+    std::array<uint8_t, 16> mem = {BMI_Re, 0x02, LDY_I, 0x01, LDA_I, 0x01, 0x00};
+    auto cpu = CPU(0, mem);
+    cpu.setNegativeFlag(false);
     cpu.run();
     EXPECT_EQ(0x01, cpu.getYRegister());
     EXPECT_EQ(0x01, cpu.getARegister());

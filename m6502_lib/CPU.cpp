@@ -97,6 +97,7 @@ class CPU {
     void compareRegisterTo(uint8_t reg, uint8_t value) {
         zeroFlag = value == reg;
         carryFlag = reg >= value;
+        negativeFlag = reg < value;
     }
 
 public:
@@ -199,6 +200,10 @@ public:
                 }
                 case BCS_Re : {
                     branchIfTrue(carryFlag);
+                    break;
+                }
+                case BMI_Re : {
+                    branchIfTrue(negativeFlag);
                     break;
                 }
 
@@ -458,6 +463,9 @@ public:
                   << " A:" << (int) ARegister
                   << " X:" << (int) XRegister
                   << " Y:" << (int) YRegister
+                  << " flags N;" << negativeFlag
+                  << " V-BD;" << decimalFlag
+                  << " IZC;" << carryFlag
                   << std::endl;
     }
 };
