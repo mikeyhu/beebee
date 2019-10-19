@@ -14,6 +14,8 @@ class CPU {
     uint16_t programCounter;
     bool decimalFlag = false;
     bool zeroFlag = false;
+    bool carryFlag = false;
+    bool negativeFlag = false;
     std::array<uint8_t, SIZE> memory;
 
     uint16_t toUInt16(uint8_t a, uint8_t b) {
@@ -92,6 +94,11 @@ class CPU {
         }
     }
 
+    void compareAccumulatorTo(uint8_t value) {
+        zeroFlag = value == ARegister;
+        carryFlag = ARegister >= value;
+    }
+
 public:
     CPU(uint16_t programCounter, std::array<uint8_t, SIZE> memory) {
         this->programCounter = programCounter;
@@ -104,6 +111,9 @@ public:
                 case BRK :
                     printState();
                     return;
+                case CLC :
+                    carryFlag = false;
+                    break;
                 case CLD :
                     decimalFlag = false;
                     break;
@@ -140,8 +150,31 @@ public:
                     branchIfTrue(zeroFlag);
                     break;
                 }
+                case BPL_Re : {
+                    branchIfTrue(!negativeFlag);
+                    break;
+                }
 
                     // Compare
+                case CMP_I :
+                    compareAccumulatorTo(readImmediate());
+                    break;
+                case CMP_Z :
+                    compareAccumulatorTo(readZeroPage());
+                    break;
+                case CMP_ZX :
+                    compareAccumulatorTo(readZeroPageX());
+                    break;
+                case CMP_Ab :
+                    compareAccumulatorTo(readAbsolute());
+                    break;
+                case CMP_AbX :
+                    compareAccumulatorTo(readAbsoluteX());
+                    break;
+                case CMP_AbY :
+                    compareAccumulatorTo(readAbsoluteY());
+                    break;
+
                 case CPX_I :
                     zeroFlag = readImmediate() == XRegister;
                     break;
@@ -279,6 +312,7 @@ public:
     void setARegister(uint8_t aRegister) {
         ARegister = aRegister;
         zeroFlag = ARegister == 0;
+        negativeFlag = ARegister >> 7 != 0;
     }
 
     uint8_t getXRegister() const {
@@ -288,7 +322,7 @@ public:
     void setXRegister(uint8_t xRegister) {
         XRegister = xRegister;
         zeroFlag = XRegister == 0;
-
+        negativeFlag = XRegister >> 7 != 0;
     }
 
     uint8_t getYRegister() const {
@@ -298,6 +332,7 @@ public:
     void setYRegister(uint8_t yRegister) {
         YRegister = yRegister;
         zeroFlag = YRegister == 0;
+        negativeFlag = YRegister >> 7 != 0;
     }
 
     bool isDecimalFlag() const {
@@ -314,6 +349,22 @@ public:
 
     void setZeroFlag(bool zeroFlag) {
         CPU::zeroFlag = zeroFlag;
+    }
+
+    bool isCarryFlag() const {
+        return carryFlag;
+    }
+
+    bool isNegativeFlag() const {
+        return negativeFlag;
+    }
+
+    void setNegativeFlag(bool negativeFlag) {
+        CPU::negativeFlag = negativeFlag;
+    }
+
+    void setCarryFlag(bool carryFlag) {
+        CPU::carryFlag = carryFlag;
     }
 
     uint8_t getStackPointer() const {

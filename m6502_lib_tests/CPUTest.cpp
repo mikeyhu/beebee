@@ -63,10 +63,19 @@ TEST(CPUTest, AND_ZX) {
 // LDA : LoaD Accumulator
 
 TEST(CPUTest, LDA_I) {
+    std::array<uint8_t, 3> mem = {LDA_I, 0x08, BRK};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0x08, cpu.getARegister());
+    EXPECT_FALSE(cpu.isNegativeFlag());
+}
+
+TEST(CPUTest, LDA_I_Negative) {
     std::array<uint8_t, 3> mem = {LDA_I, 0x80, BRK};
     auto cpu = CPU(0, mem);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getARegister());
+    EXPECT_TRUE(cpu.isNegativeFlag());
 }
 
 TEST(CPUTest, LDA_Ab) {
@@ -257,6 +266,14 @@ TEST(CPUTest, STX_ZY) {
     EXPECT_EQ(0x80, cpu.getMemory()[7]);
 }
 
+TEST(CPUTest, CLC) {
+    std::array<uint8_t, 2> mem = {CLC, BRK};
+    auto cpu = CPU(0, mem);
+    cpu.setCarryFlag(true);
+    cpu.run();
+    EXPECT_FALSE(cpu.isCarryFlag());
+}
+
 TEST(CPUTest, CLD) {
     std::array<uint8_t, 2> mem = {CLD, BRK};
     auto cpu = CPU(0, mem);
@@ -361,22 +378,88 @@ TEST(CPUTest, TXS) {
 
 // CPX : ComPare Xregister
 TEST(CPUTest, CPX_I_false) {
-    std::array<uint8_t, 16> mem = {LDX_I,0x08,CPX_I,0x07,0x00};
+    std::array<uint8_t, 16> mem = {LDX_I, 0x08, CPX_I, 0x07, 0x00};
     auto cpu = CPU(0, mem);
     cpu.run();
     EXPECT_FALSE(cpu.isZeroFlag());
 }
 
 TEST(CPUTest, CPX_I_true) {
-    std::array<uint8_t, 16> mem = {LDX_I,0x08,CPX_I,0x08,0x00};
+    std::array<uint8_t, 16> mem = {LDX_I, 0x08, CPX_I, 0x08, 0x00};
     auto cpu = CPU(0, mem);
     cpu.run();
     EXPECT_TRUE(cpu.isZeroFlag());
 }
 
+// CMP : CoMPare Accumulator
+TEST(CPUTest, CMP_I_CarryOnly) {
+    std::array<uint8_t, 16> mem = {LDA_I, 0x08, CMP_I, 0x07, 0x00};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_FALSE(cpu.isZeroFlag());
+    EXPECT_TRUE(cpu.isCarryFlag());
+}
+
+TEST(CPUTest, CMP_I_CarryAndZero) {
+    std::array<uint8_t, 16> mem = {LDA_I, 0x07, CMP_I, 0x07, 0x00};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_TRUE(cpu.isZeroFlag());
+    EXPECT_TRUE(cpu.isCarryFlag());
+}
+
+TEST(CPUTest, CMP_I_None) {
+    std::array<uint8_t, 16> mem = {LDA_I, 0x07, CMP_I, 0x08, 0x00};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_FALSE(cpu.isZeroFlag());
+    EXPECT_FALSE(cpu.isCarryFlag());
+}
+
+TEST(CPUTest, CMP_Z_CarryAndZero) {
+    std::array<uint8_t, 16> mem = {LDA_I, 0xff, CMP_Z, 0x05, 0x00, 0xff};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_TRUE(cpu.isZeroFlag());
+    EXPECT_TRUE(cpu.isCarryFlag());
+}
+
+TEST(CPUTest, CMP_ZX_CarryAndZero) {
+    std::array<uint8_t, 16> mem = {LDA_I, 0xff, LDX_I, 0x02, CMP_ZX, 0x05, 0x00, 0xff};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_TRUE(cpu.isZeroFlag());
+    EXPECT_TRUE(cpu.isCarryFlag());
+}
+
+TEST(CPUTest, CMP_Ab_CarryAndZero) {
+    std::array<uint8_t, 16> mem = {LDA_I, 0xff, CMP_Ab, 0x06, 0x00, 0x00, 0xff};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_TRUE(cpu.isZeroFlag());
+    EXPECT_TRUE(cpu.isCarryFlag());
+}
+
+TEST(CPUTest, CMP_AbX_CarryAndZero) {
+    std::array<uint8_t, 16> mem = {LDA_I, 0xff, LDX_I, 0x02, CMP_AbX, 0x06, 0x00, 0x00, 0xff};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_TRUE(cpu.isZeroFlag());
+    EXPECT_TRUE(cpu.isCarryFlag());
+}
+
+TEST(CPUTest, CMP_AbY_CarryAndZero) {
+    std::array<uint8_t, 16> mem = {LDA_I, 0xff, LDY_I, 0x02, CMP_AbY, 0x06, 0x00, 0x00, 0xff};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_TRUE(cpu.isZeroFlag());
+    EXPECT_TRUE(cpu.isCarryFlag());
+}
+
 // BNE : Branch on Not Equal (backwards is relative is > 0x80, otherwise forwards)
 TEST(CPUTest, BNE_backwards) {
-    std::array<uint8_t, 16> mem = {LDX_I,0x08,DEX,STX_Ab,0x0e,0x00,CPX_I,0x03,BNE_Re,0xf8,STX_Ab,0x0f,0x00,0x00,0x00,0x00};
+    std::array<uint8_t, 16> mem = {LDX_I, 0x08, DEX, STX_Ab, 0x0e, 0x00, CPX_I, 0x03, BNE_Re, 0xf8, STX_Ab, 0x0f, 0x00,
+                                   0x00, 0x00, 0x00};
     auto cpu = CPU(0, mem);
     cpu.run();
     EXPECT_EQ(0x03, cpu.getMemory()[14]);
@@ -384,7 +467,7 @@ TEST(CPUTest, BNE_backwards) {
 }
 
 TEST(CPUTest, BNE_forwards) {
-    std::array<uint8_t, 16> mem = {LDX_I,0x08,CPX_I,0x07,BNE_Re,0x02,LDY_I,0x01,LDA_I,0x01,0x00};
+    std::array<uint8_t, 16> mem = {LDX_I, 0x08, CPX_I, 0x07, BNE_Re, 0x02, LDY_I, 0x01, LDA_I, 0x01, 0x00};
     auto cpu = CPU(0, mem);
     cpu.run();
     EXPECT_EQ(0x00, cpu.getYRegister());
@@ -392,10 +475,27 @@ TEST(CPUTest, BNE_forwards) {
 }
 
 TEST(CPUTest, BEQ_forwards) {
-    std::array<uint8_t, 16> mem = {LDX_I,0x08,CPX_I,0x08,BEQ_Re,0x02,LDY_I,0x01,LDA_I,0x01,0x00};
+    std::array<uint8_t, 16> mem = {LDX_I, 0x08, CPX_I, 0x08, BEQ_Re, 0x02, LDY_I, 0x01, LDA_I, 0x01, 0x00};
     auto cpu = CPU(0, mem);
     cpu.run();
     EXPECT_EQ(0x00, cpu.getYRegister());
     EXPECT_EQ(0x01, cpu.getARegister());
 }
+
+TEST(CPUTest, BPL_if_positive) {
+    std::array<uint8_t, 16> mem = {LDX_I, 0x08, BPL_Re, 0x02, LDY_I, 0x01, LDA_I, 0x01, 0x00};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0x00, cpu.getYRegister());
+    EXPECT_EQ(0x01, cpu.getARegister());
+}
+
+TEST(CPUTest, BPL_if_negative) {
+    std::array<uint8_t, 16> mem = {LDX_I, 0x88, BPL_Re, 0x02, LDY_I, 0x01, LDA_I, 0x01, 0x00};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0x01, cpu.getYRegister());
+    EXPECT_EQ(0x01, cpu.getARegister());
+}
+
 
