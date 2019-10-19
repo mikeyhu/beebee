@@ -193,6 +193,14 @@ public:
                     branchIfTrue(!negativeFlag);
                     break;
                 }
+                case BCC_Re : {
+                    branchIfTrue(!carryFlag);
+                    break;
+                }
+                case BCS_Re : {
+                    branchIfTrue(carryFlag);
+                    break;
+                }
 
                     // Compare
                 case CMP_I :
