@@ -89,6 +89,26 @@ public:
                     programCounter = locationAbsolute();
                     break;
 
+                    // AND : bitwise AND with accumulator
+                case AND_I :
+                    ARegister = ARegister & readImmediate();
+                    break;
+                case AND_Ab :
+                    ARegister = ARegister & readAbsolute();
+                    break;
+                case AND_AbX :
+                    ARegister = ARegister & readAbsoluteX();
+                    break;
+                case AND_AbY :
+                    ARegister = ARegister & readAbsoluteY();
+                    break;
+                case AND_Z :
+                    ARegister = ARegister & readZeroPage();
+                    break;
+                case AND_ZX :
+                    ARegister = ARegister & readZeroPageX();
+                    break;
+
                     // LDA : LoaD Accumulator
                 case LDA_I :
                     ARegister = readImmediate();
