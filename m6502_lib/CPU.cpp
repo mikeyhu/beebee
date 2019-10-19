@@ -13,10 +13,11 @@ class CPU {
     uint8_t stackPointer = 0;
     uint16_t programCounter;
     bool decimalFlag = false;
+    bool zeroFlag = false;
     std::array<uint8_t, SIZE> memory;
 
     uint16_t toUInt16(uint8_t a, uint8_t b) {
-        return a << 8 | b;
+        return b << 8 | a;
     }
 
     uint16_t readUInt16() {
@@ -29,6 +30,10 @@ class CPU {
 
     uint8_t readUInt8() {
         return memory[programCounter++];
+    }
+
+    uint8_t readOpCode() {
+        return readUInt8();
     }
 
     uint8_t readImmediate() {
@@ -45,6 +50,10 @@ class CPU {
 
     uint16_t locationZeroPageX() {
         return locationZeroPage() + XRegister;
+    }
+
+    uint16_t locationZeroPageY() {
+        return locationZeroPage() + YRegister;
     }
 
     uint8_t readZeroPageX() {
@@ -79,7 +88,7 @@ public:
 
     void run() {
         for (;;) {
-            switch (readUInt8()) {
+            switch (readOpCode()) {
                 case BRK :
                     printState();
                     return;
@@ -108,6 +117,23 @@ public:
                     break;
                 case AND_ZX :
                     ARegister = ARegister & readZeroPageX();
+                    break;
+
+                    // Branch
+                case BNE_Re : {
+                    uint8_t location = readImmediate();
+                    if (!zeroFlag) {
+                        if(location >=0x80) {
+                            programCounter = programCounter - 0x100 + location;
+                        } else {
+                            programCounter = programCounter + location;
+                        }
+                    }
+                    break;
+                }
+                    // Compare
+                case CPX_I :
+                    zeroFlag = readImmediate() == XRegister;
                     break;
 
                     //IN : INcremement
@@ -196,6 +222,16 @@ public:
                 case STA_ZX :
                     memory[locationZeroPageX()] = ARegister;
                     break;
+                    //STX : STore Xregister
+                case STX_Ab :
+                    memory[locationAbsolute()] = XRegister;
+                    break;
+                case STX_Z :
+                    memory[locationZeroPage()] = XRegister;
+                    break;
+                case STX_ZY :
+                    memory[locationZeroPageY()] = XRegister;
+                    break;
 
                     // T : Transfer
                 case TAX:
@@ -243,6 +279,14 @@ public:
 
     void setDecimalFlag(bool decimalFlag) {
         CPU::decimalFlag = decimalFlag;
+    }
+
+    bool isZeroFlag() const {
+        return zeroFlag;
+    }
+
+    void setZeroFlag(bool zeroFlag) {
+        CPU::zeroFlag = zeroFlag;
     }
 
     uint8_t getStackPointer() const {
