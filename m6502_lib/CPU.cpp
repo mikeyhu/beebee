@@ -358,6 +358,14 @@ public:
                 case TXS :
                     stackPointer = XRegister;
                     break;
+
+                    //stack
+                case PHA :
+                    memory[0x100+ stackPointer--] = ARegister;
+                    break;
+                case PLA :
+                    setARegister(memory[0x100 + ++stackPointer]);
+                    break;
                 case NOP :
                     break;
                 default:

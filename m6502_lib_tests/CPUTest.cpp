@@ -381,13 +381,6 @@ TEST(CPUGeneral, TYA) {
     EXPECT_EQ(0x02, cpu.getARegister());
 }
 
-TEST(CPUGeneral, TXS) {
-    std::array<uint8_t, 4> mem = {LDX_I, 0xff, TXS, BRK};
-    auto cpu = CPU(0, mem);
-    cpu.run();
-    EXPECT_EQ(0xff, cpu.getStackPointer());
-}
-
 class CPUBitwise : public ::testing::Test {
 
 };
@@ -703,4 +696,32 @@ TEST(CPUBranch, BMI_if_false) {
     cpu.run();
     EXPECT_EQ(0x01, cpu.getYRegister());
     EXPECT_EQ(0x01, cpu.getARegister());
+}
+
+class CPUStack : public ::testing::Test {
+
+};
+
+TEST(CPUStack, TXS) {
+    std::array<uint8_t, 4> mem = {LDX_I, 0xff, TXS, BRK};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0xff, cpu.getStackPointer());
+}
+// PHA : PusH Accumulator
+TEST(CPUStack, PHA) {
+    std::array<uint8_t, 0x200> mem = {LDX_I, 0xff, TXS, LDA_I,0x01,PHA,BRK};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0xfe, cpu.getStackPointer());
+    EXPECT_EQ(0x01, cpu.getMemory()[0x1ff]);
+}
+// PLA : PuLl Accumulator
+TEST(CPUStack, PLA) {
+    std::array<uint8_t, 0x200> mem = {LDX_I, 0xff, TXS, LDA_I,0x01,PHA,LDA_I,0x02,PLA,BRK};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0xff, cpu.getStackPointer());
+    EXPECT_EQ(0x01, cpu.getARegister());
+    EXPECT_EQ(0x01, cpu.getMemory()[0x1ff]);
 }
