@@ -95,7 +95,7 @@ enum OpCode {
     INY = 0xc8,             // INY Implied $c8 - Z- - - - N
 
     JMP_Ab = 0x4c,          // JMP $NNNN Absolute $4c - - - - - - -
-    JMP_I = 0x6c,           // JMP $NN Indirect $6c - - - - - - -
+    JMP_Indir = 0x6c,           // JMP $NN Indirect $6c - - - - - - -
 
     JSR_Ab = 0x20,          // JSR $NNNN Absolute $20 - - - - - - -
 

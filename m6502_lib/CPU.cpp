@@ -15,6 +15,62 @@ class CPU {
     bool decimalFlag = false;
     std::array<uint8_t, SIZE> memory;
 
+    uint16_t toUInt16(uint8_t a, uint8_t b) {
+        return a << 8 | b;
+    }
+
+    uint16_t readUInt16() {
+        return toUInt16(memory[programCounter++], memory[programCounter++]);
+    }
+
+    uint16_t locationAbsolute() {
+        return readUInt16();
+    }
+
+    uint8_t readUInt8() {
+        return memory[programCounter++];
+    }
+
+    uint8_t readImmediate() {
+        return readUInt8();
+    }
+
+    uint8_t locationZeroPage() {
+        return readUInt8();
+    }
+
+    uint8_t readZeroPage() {
+        return memory[locationZeroPage()];
+    }
+
+    uint16_t locationZeroPageX() {
+        return locationZeroPage() + XRegister;
+    }
+
+    uint8_t readZeroPageX() {
+        return memory[locationZeroPageX()];
+    }
+
+    uint16_t locationAbsoluteX() {
+        return locationAbsolute() + XRegister;
+    }
+
+    uint16_t locationAbsoluteY() {
+        return locationAbsolute() + YRegister;
+    }
+
+    uint8_t readAbsoluteX() {
+        return memory[locationAbsoluteX()];
+    }
+
+    uint8_t readAbsoluteY() {
+        return memory[locationAbsoluteY()];
+    }
+
+    uint8_t readAbsolute() {
+        return memory[locationAbsolute()];
+    }
+
 public:
     CPU(uint16_t programCounter, std::array<uint8_t, SIZE> memory) {
         this->programCounter = programCounter;
@@ -23,23 +79,85 @@ public:
 
     void run() {
         for (;;) {
-            switch (memory[programCounter++]) {
+            switch (readUInt8()) {
                 case BRK :
                     return;
-                case LDA_I :
-                    ARegister = memory[programCounter++];
-                    break;
-                case LDX_I :
-                    XRegister = memory[programCounter++];
-                    break;
-                case LDY_I :
-                    YRegister = memory[programCounter++];
-                    break;
-                case STA_Z :
-                    memory[memory[programCounter++]] = ARegister;
-                    break;
                 case CLD :
                     decimalFlag = false;
+                    break;
+                case JMP_Ab:
+                    programCounter = locationAbsolute();
+                    break;
+
+                    // LDA : LoaD Accumulator
+                case LDA_I :
+                    ARegister = readImmediate();
+                    break;
+                case LDA_Ab :
+                    ARegister = readAbsolute();
+                    break;
+                case LDA_AbX :
+                    ARegister = readAbsoluteX();
+                    break;
+                case LDA_AbY :
+                    ARegister = readAbsoluteY();
+                    break;
+                case LDA_Z :
+                    ARegister = readZeroPage();
+                    break;
+                case LDA_ZX :
+                    ARegister = readZeroPageX();
+                    break;
+
+                    // LDX : LoaD Xregister
+                case LDX_I :
+                    XRegister = readImmediate();
+                    break;
+                case LDX_Ab :
+                    XRegister = readAbsolute();
+                    break;
+                case LDX_AbY :
+                    XRegister = readAbsoluteY();
+                    break;
+                case LDX_Z :
+                    XRegister = readZeroPage();
+                    break;
+                case LDX_ZX :
+                    XRegister = readZeroPageX();
+                    break;
+
+                    // LDY : LoaD Yregister
+                case LDY_I :
+                    YRegister = readImmediate();
+                    break;
+                case LDY_Ab :
+                    YRegister = readAbsolute();
+                    break;
+                case LDY_AbX :
+                    YRegister = readAbsoluteX();
+                    break;
+                case LDY_Z :
+                    YRegister = readZeroPage();
+                    break;
+                case LDY_ZX :
+                    YRegister = readZeroPageX();
+                    break;
+
+                    //STA : STore Accumulator
+                case STA_Ab :
+                    memory[locationAbsolute()] = ARegister;
+                    break;
+                case STA_AbX :
+                    memory[locationAbsoluteX()] = ARegister;
+                    break;
+                case STA_AbY :
+                    memory[locationAbsoluteY()] = ARegister;
+                    break;
+                case STA_Z :
+                    memory[locationZeroPage()] = ARegister;
+                    break;
+                case STA_ZX :
+                    memory[locationZeroPageX()] = ARegister;
                     break;
                 case TXS :
                     stackPointer = XRegister;
