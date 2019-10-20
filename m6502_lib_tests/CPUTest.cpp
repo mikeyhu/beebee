@@ -698,6 +698,42 @@ TEST(CPUBranch, BMI_if_false) {
     EXPECT_EQ(0x01, cpu.getARegister());
 }
 
+TEST(CPUBranch, BVC_if_false) {
+    std::array<uint8_t, 16> mem = {BVC_Re, 0x02, LDY_I, 0x01, LDA_I, 0x01, 0x00};
+    auto cpu = CPU(0, mem);
+    cpu.setOverflowFlag(false);
+    cpu.run();
+    EXPECT_EQ(0x00, cpu.getYRegister());
+    EXPECT_EQ(0x01, cpu.getARegister());
+}
+
+TEST(CPUBranch, BVC_if_true) {
+    std::array<uint8_t, 16> mem = {BVC_Re, 0x02, LDY_I, 0x01, LDA_I, 0x01, 0x00};
+    auto cpu = CPU(0, mem);
+    cpu.setOverflowFlag(true);
+    cpu.run();
+    EXPECT_EQ(0x01, cpu.getYRegister());
+    EXPECT_EQ(0x01, cpu.getARegister());
+}
+
+TEST(CPUBranch, BVS_if_false) {
+    std::array<uint8_t, 16> mem = {BVS_Re, 0x02, LDY_I, 0x01, LDA_I, 0x01, 0x00};
+    auto cpu = CPU(0, mem);
+    cpu.setOverflowFlag(false);
+    cpu.run();
+    EXPECT_EQ(0x01, cpu.getYRegister());
+    EXPECT_EQ(0x01, cpu.getARegister());
+}
+
+TEST(CPUBranch, BVS_if_true) {
+    std::array<uint8_t, 16> mem = {BVS_Re, 0x02, LDY_I, 0x01, LDA_I, 0x01, 0x00};
+    auto cpu = CPU(0, mem);
+    cpu.setOverflowFlag(true);
+    cpu.run();
+    EXPECT_EQ(0x00, cpu.getYRegister());
+    EXPECT_EQ(0x01, cpu.getARegister());
+}
+
 class CPUStack : public ::testing::Test {
 
 };
@@ -710,7 +746,7 @@ TEST(CPUStack, TXS) {
 }
 // PHA : PusH Accumulator
 TEST(CPUStack, PHA) {
-    std::array<uint8_t, 0x200> mem = {LDX_I, 0xff, TXS, LDA_I,0x01,PHA,BRK};
+    std::array<uint8_t, 0x200> mem = {LDX_I, 0xff, TXS, LDA_I, 0x01, PHA, BRK};
     auto cpu = CPU(0, mem);
     cpu.run();
     EXPECT_EQ(0xfe, cpu.getStackPointer());
@@ -718,10 +754,35 @@ TEST(CPUStack, PHA) {
 }
 // PLA : PuLl Accumulator
 TEST(CPUStack, PLA) {
-    std::array<uint8_t, 0x200> mem = {LDX_I, 0xff, TXS, LDA_I,0x01,PHA,LDA_I,0x02,PLA,BRK};
+    std::array<uint8_t, 0x200> mem = {LDX_I, 0xff, TXS, LDA_I, 0x01, PHA, LDA_I, 0x02, PLA, BRK};
     auto cpu = CPU(0, mem);
     cpu.run();
     EXPECT_EQ(0xff, cpu.getStackPointer());
     EXPECT_EQ(0x01, cpu.getARegister());
     EXPECT_EQ(0x01, cpu.getMemory()[0x1ff]);
+}
+
+TEST(CPUStack, TSX) {
+    std::array<uint8_t, 0x200> mem = {LDX_I, 0xfe, TXS, LDX_I, 0xff, TSX, BRK};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0xfe, cpu.getStackPointer());
+    EXPECT_EQ(0xfe, cpu.getXRegister());
+}
+
+TEST(CPUStack, PHP_PLP) {
+    std::array<uint8_t, 0x5> mem = { PHP,LDA_I,0x01,PLP,BRK};
+    auto cpu = CPU(0, mem);
+    cpu.setCarryFlag(true);
+    cpu.setZeroFlag(true);
+    cpu.setDecimalFlag(true);
+    cpu.setOverflowFlag(true);
+    cpu.setNegativeFlag(true);
+    cpu.run();
+    EXPECT_EQ(0x05,cpu.getProgramCounter());
+    EXPECT_TRUE(cpu.isCarryFlag());
+    EXPECT_TRUE(cpu.isZeroFlag());
+    EXPECT_TRUE(cpu.isDecimalFlag());
+    EXPECT_TRUE(cpu.isOverflowFlag());
+    EXPECT_TRUE(cpu.isNegativeFlag());
 }

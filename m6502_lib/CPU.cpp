@@ -12,9 +12,10 @@ class CPU {
     uint8_t YRegister = 0;
     uint8_t stackPointer = 0;
     uint16_t programCounter;
-    bool decimalFlag = false;
-    bool zeroFlag = false;
     bool carryFlag = false;
+    bool zeroFlag = false;
+    bool decimalFlag = false;
+    bool overflowFlag = false;
     bool negativeFlag = false;
     std::array<uint8_t, SIZE> memory;
 
@@ -100,6 +101,25 @@ class CPU {
         negativeFlag = reg < value;
     }
 
+    uint8_t flagsAsInt() {
+        return carryFlag |
+               (zeroFlag << 1) |
+               (true << 2) |
+               (decimalFlag << 3) |
+               (true << 4) |
+               (true << 5) |
+               (overflowFlag << 6) |
+               (negativeFlag << 7);
+    }
+
+    void intToFlags(uint8_t flags) {
+        carryFlag = flags & 1;
+        zeroFlag = flags >> 1 & 1;
+        decimalFlag = flags >> 3 & 1;
+        overflowFlag = flags >> 6 & 1;
+        negativeFlag = flags >> 7 & 1;
+    }
+
 public:
     CPU(uint16_t programCounter, std::array<uint8_t, SIZE> memory) {
         this->programCounter = programCounter;
@@ -182,31 +202,30 @@ public:
                     break;
 
                     // Branch
-                case BNE_Re : {
-                    branchIfTrue(!zeroFlag);
-                    break;
-                }
-                case BEQ_Re : {
-                    branchIfTrue(zeroFlag);
-                    break;
-                }
-                case BPL_Re : {
-                    branchIfTrue(!negativeFlag);
-                    break;
-                }
-                case BCC_Re : {
+                case BCC_Re :
                     branchIfTrue(!carryFlag);
                     break;
-                }
-                case BCS_Re : {
+                case BCS_Re :
                     branchIfTrue(carryFlag);
                     break;
-                }
-                case BMI_Re : {
+                case BNE_Re :
+                    branchIfTrue(!zeroFlag);
+                    break;
+                case BEQ_Re :
+                    branchIfTrue(zeroFlag);
+                    break;
+                case BPL_Re :
+                    branchIfTrue(!negativeFlag);
+                    break;
+                case BMI_Re :
                     branchIfTrue(negativeFlag);
                     break;
-                }
-
+                case BVC_Re :
+                    branchIfTrue(!overflowFlag);
+                    break;
+                case BVS_Re :
+                    branchIfTrue(overflowFlag);
+                    break;
                     // Compare
                 case CMP_I :
                     compareRegisterTo(ARegister, readImmediate());
@@ -360,11 +379,20 @@ public:
                     break;
 
                     //stack
+                case TSX :
+                    setXRegister(stackPointer);
+                    break;
                 case PHA :
-                    memory[0x100+ stackPointer--] = ARegister;
+                    memory[0x100 + stackPointer--] = ARegister;
                     break;
                 case PLA :
                     setARegister(memory[0x100 + ++stackPointer]);
+                    break;
+                case PHP :
+                    memory[0x100 + stackPointer--] = flagsAsInt();
+                    break;
+                case PLP :
+                    intToFlags(memory[0x100 + ++stackPointer]);
                     break;
                 case NOP :
                     break;
@@ -451,6 +479,14 @@ public:
 
     void setCarryFlag(bool carryFlag) {
         CPU::carryFlag = carryFlag;
+    }
+
+    bool isOverflowFlag() const {
+        return overflowFlag;
+    }
+
+    void setOverflowFlag(bool overflowFlag) {
+        CPU::overflowFlag = overflowFlag;
     }
 
     uint8_t getStackPointer() const {
