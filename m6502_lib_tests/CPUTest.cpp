@@ -302,6 +302,14 @@ TEST(CPUGeneral, JMP_Ab) {
     EXPECT_EQ(0x06, cpu.getProgramCounter());
 }
 
+TEST(CPUGeneral, JMP_Indir) {
+    std::array<uint8_t, 8> mem = {JMP_Indir, 0x06, 0x00, LDX_I, 0xff, BRK, 0x03, 0x00};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0xff, cpu.getXRegister());
+    EXPECT_EQ(0x06, cpu.getProgramCounter());
+}
+
 // INcrement
 
 TEST(CPUGeneral, INX) {

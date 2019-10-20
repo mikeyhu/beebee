@@ -150,7 +150,13 @@ public:
                 case JMP_Ab:
                     programCounter = locationAbsolute();
                     break;
-
+                case JMP_Indir: {
+                    uint16_t indirect = locationAbsolute();
+                    uint8_t upper = memory[indirect];
+                    uint8_t lower = memory[indirect + 1];
+                    programCounter = toUInt16(upper, lower);
+                    break;
+                }
                     // ADC : ADd with Carry
                 case ADC_I :
                     addToARegister(readImmediate());
