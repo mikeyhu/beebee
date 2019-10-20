@@ -12,9 +12,13 @@ class CPU {
     uint8_t YRegister = 0;
     uint8_t stackPointer = 0;
     uint16_t programCounter;
+    uint16_t previousProgramCounter;
     bool carryFlag = false;
     bool zeroFlag = false;
+    bool interruptDisableFlag = false;
+    bool breakCommandFlag = true;
     bool decimalFlag = false;
+    bool unknownFlag = false;
     bool overflowFlag = false;
     bool negativeFlag = false;
     std::array<uint8_t, SIZE> memory;
@@ -104,7 +108,7 @@ class CPU {
     uint8_t flagsAsInt() {
         return carryFlag |
                (zeroFlag << 1) |
-               (true << 2) |
+               (interruptDisableFlag << 2) |
                (decimalFlag << 3) |
                (true << 4) |
                (true << 5) |
@@ -115,7 +119,12 @@ class CPU {
     void intToFlags(uint8_t flags) {
         carryFlag = flags & 1;
         zeroFlag = flags >> 1 & 1;
+        interruptDisableFlag = flags >> 2 & 1;
         decimalFlag = flags >> 3 & 1;
+//        breakCommandFlag = flags >> 4 & 1;
+        breakCommandFlag = true;
+//        unknownFlag = flags >> 5 & 1;
+        unknownFlag = true;
         overflowFlag = flags >> 6 & 1;
         negativeFlag = flags >> 7 & 1;
     }
@@ -401,6 +410,12 @@ public:
                     printState();
                     return;
             }
+            if (previousProgramCounter == programCounter) {
+                std::cout << "Trap found!" << std::endl;
+                return;
+            }
+            previousProgramCounter = programCounter;
+
             printState();
         }
     }
@@ -508,8 +523,12 @@ public:
                   << " X:" << (int) XRegister
                   << " Y:" << (int) YRegister
                   << " flags N;" << negativeFlag
-                  << " V-BD;" << decimalFlag
-                  << " IZC;" << carryFlag
+                  << " V;" << overflowFlag
+                  << " -B;" << breakCommandFlag
+                  << " D;" << decimalFlag
+                  << " I;" << interruptDisableFlag
+                  << " Z;" << zeroFlag
+                  << " C;" << carryFlag
                   << std::endl;
     }
 };
