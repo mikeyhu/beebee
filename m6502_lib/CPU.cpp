@@ -7,10 +7,12 @@
 template<std::size_t SIZE>
 
 class CPU {
+    const uint16_t STACK_START = 0x100;
+
     uint8_t ARegister = 0;
     uint8_t XRegister = 0;
     uint8_t YRegister = 0;
-    uint8_t stackPointer = 0;
+    uint8_t stackPointer = 0xff;
     uint16_t programCounter;
     uint16_t previousProgramCounter;
     bool carryFlag = false;
@@ -88,6 +90,14 @@ class CPU {
         return memory[locationAbsolute()];
     }
 
+    void pushToStack(uint8_t value) {
+        memory[STACK_START + stackPointer--] = value;
+    }
+
+    uint8_t popFromStack() {
+        return memory[STACK_START + ++stackPointer];
+    }
+
     void branchIfTrue(bool check) {
         uint8_t location = readImmediate(); //always read immediate to move counter anyway
         if (check) {
@@ -140,6 +150,7 @@ public:
             switch (readOpCode()) {
                 case BRK :
                     printState();
+                    std::cout << "BRK encountered" << std::endl;
                     return;
                 case CLC :
                     carryFlag = false;
@@ -398,17 +409,33 @@ public:
                     setXRegister(stackPointer);
                     break;
                 case PHA :
-                    memory[0x100 + stackPointer--] = ARegister;
+                    pushToStack(ARegister);
                     break;
                 case PLA :
-                    setARegister(memory[0x100 + ++stackPointer]);
+                    setARegister(popFromStack());
                     break;
                 case PHP :
-                    memory[0x100 + stackPointer--] = flagsAsInt();
+                    pushToStack(flagsAsInt());
                     break;
                 case PLP :
-                    intToFlags(memory[0x100 + ++stackPointer]);
+                    intToFlags(popFromStack());
                     break;
+                case JSR_Ab : {
+                    uint16_t counter = programCounter + 1;
+                    uint8_t lower = counter >> 8;
+                    uint8_t upper = (uint8_t) counter;
+                    pushToStack(lower);
+                    pushToStack(upper);
+                    programCounter = locationAbsolute();
+                    break;
+                }
+                case RTS : {
+                    uint8_t upper = popFromStack();
+                    uint8_t lower = popFromStack();
+                    uint16_t counter = lower << 8 | upper;
+                    programCounter = counter + 1;
+                    break;
+                }
                 case NOP :
                     break;
                 default:
@@ -534,7 +561,10 @@ public:
                   << " D;" << decimalFlag
                   << " I;" << interruptDisableFlag
                   << " Z;" << zeroFlag
-                  << " C;" << carryFlag
-                  << std::endl;
+                  << " C;" << carryFlag;
+        for (int i = stackPointer; i <= 0xff; i++) {
+            std::cout << " [" << i << ":" << (long)(uint8_t) memory[0x100 + i] << "]";
+        }
+        std::cout << std::endl;
     }
 };

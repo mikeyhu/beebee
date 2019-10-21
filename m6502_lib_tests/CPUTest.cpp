@@ -779,7 +779,7 @@ TEST(CPUStack, TSX) {
 }
 
 TEST(CPUStack, PHP_PLP) {
-    std::array<uint8_t, 0x5> mem = { PHP,LDA_I,0x01,PLP,BRK};
+    std::array<uint8_t, 0x5> mem = {PHP, LDA_I, 0x01, PLP, BRK};
     auto cpu = CPU(0, mem);
     cpu.setCarryFlag(true);
     cpu.setZeroFlag(true);
@@ -787,10 +787,28 @@ TEST(CPUStack, PHP_PLP) {
     cpu.setOverflowFlag(true);
     cpu.setNegativeFlag(true);
     cpu.run();
-    EXPECT_EQ(0x05,cpu.getProgramCounter());
+    EXPECT_EQ(0x05, cpu.getProgramCounter());
     EXPECT_TRUE(cpu.isCarryFlag());
     EXPECT_TRUE(cpu.isZeroFlag());
     EXPECT_TRUE(cpu.isDecimalFlag());
     EXPECT_TRUE(cpu.isOverflowFlag());
     EXPECT_TRUE(cpu.isNegativeFlag());
+}
+
+TEST(CPUStack, JSR_Ab) {
+    std::array<uint8_t, 0x200> mem = {LDX_I, 0xff, TXS, JSR_Ab, 0x08, 0x00, LDA_I, 0xff, BRK};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0x00, cpu.getARegister());
+    EXPECT_EQ(0xfd, cpu.getStackPointer());
+    EXPECT_EQ(0x00, cpu.getMemory()[0x1ff]);
+    EXPECT_EQ(0x05, cpu.getMemory()[0x1fe]);
+}
+
+TEST(CPUStack, RTS) {
+    std::array<uint8_t, 0x200> mem = {LDX_I, 0xff, TXS, JSR_Ab, 0x09, 0x00, LDA_I, 0xff, BRK, RTS};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0xff, cpu.getARegister());
+    EXPECT_EQ(0xff, cpu.getStackPointer());
 }
