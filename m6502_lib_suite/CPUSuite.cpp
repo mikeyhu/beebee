@@ -21,8 +21,8 @@ int main() {
     }
 
     auto cpu = CPU(0x400, mem);
+    cpu.setBreakLocation(0xfffe);
     cpu.run();
-    std::cout << "ProgramCounter: " << cpu.getProgramCounter() << std::endl;
-    std::cout << "test_suite: [" << std::hex << cpu.getMemory()[0x0200] << "]" << std::endl;
+    cpu.run(); //return from break for test 11.
     return 0;
 }

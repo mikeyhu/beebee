@@ -24,6 +24,7 @@ class CPU {
     bool overflowFlag = false;
     bool negativeFlag = false;
     std::array<uint8_t, SIZE> memory;
+    uint16_t breakLocation = 0;
 
     uint16_t toUInt16(uint8_t a, uint8_t b) {
         return b << 8 | a;
@@ -148,10 +149,25 @@ public:
     void run() {
         for (;;) {
             switch (readOpCode()) {
-                case BRK :
-                    printState();
+                case BRK : {
+                    if (breakLocation > 0x00) {
+                        uint16_t counter = programCounter + 1;
+                        uint8_t lower = counter >> 8;
+                        uint8_t upper = (uint8_t) counter;
+                        breakCommandFlag = true;
+                        pushToStack(lower);
+                        pushToStack(upper);
+                        pushToStack(flagsAsInt());
+                        upper = memory[breakLocation];
+                        lower = memory[breakLocation+1];
+                        counter = lower << 8 | upper;
+                        programCounter = counter;
+                    }
                     std::cout << "BRK encountered" << std::endl;
                     return;
+                }
+
+
                 case CLC :
                     carryFlag = false;
                     break;
@@ -533,6 +549,14 @@ public:
         return overflowFlag;
     }
 
+    bool isBreakCommandFlag() const {
+        return breakCommandFlag;
+    }
+
+    void setBreakCommandFlag(bool breakCommandFlag) {
+        CPU::breakCommandFlag = breakCommandFlag;
+    }
+
     void setOverflowFlag(bool overflowFlag) {
         CPU::overflowFlag = overflowFlag;
     }
@@ -543,6 +567,14 @@ public:
 
     void setStackPointer(uint8_t stackPointer) {
         CPU::stackPointer = stackPointer;
+    }
+
+    uint16_t getBreakLocation() const {
+        return breakLocation;
+    }
+
+    void setBreakLocation(uint16_t breakLocation) {
+        CPU::breakLocation = breakLocation;
     }
 
     const std::array<uint8_t, SIZE> &getMemory() const {
@@ -563,8 +595,8 @@ public:
                   << " Z;" << zeroFlag
                   << " C;" << carryFlag;
         for (int i = stackPointer; i <= 0xff; i++) {
-            std::cout << " [" << i << ":" << (long)(uint8_t) memory[0x100 + i] << "]";
+            std::cout << " [" << i << ":" << (int) (uint8_t) memory[0x100 + i] << "]";
         }
-        std::cout << std::endl;
+        std::cout << " testcase:" << (int) (uint8_t) memory[0x200] << std::endl;
     }
 };
