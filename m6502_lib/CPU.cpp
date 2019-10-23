@@ -20,7 +20,6 @@ class CPU {
     bool interruptDisableFlag = false;
     bool breakCommandFlag = true;
     bool decimalFlag = false;
-    bool unknownFlag = false;
     bool overflowFlag = false;
     bool negativeFlag = false;
     std::array<uint8_t, SIZE> memory;
@@ -91,12 +90,31 @@ class CPU {
         return memory[locationAbsolute()];
     }
 
-    void pushToStack(uint8_t value) {
+    uint16_t read16From(uint16_t location) {
+        uint8_t upper = memory[location];
+        uint8_t lower = memory[location+1];
+        return toUInt16(upper, lower);
+    }
+
+    void pushStack8(uint8_t value) {
         memory[STACK_START + stackPointer--] = value;
     }
 
-    uint8_t popFromStack() {
+    void pushStack16(uint16_t value) {
+        uint8_t lower = value >> 8;
+        uint8_t upper = (uint8_t) value;
+        pushStack8(lower);
+        pushStack8(upper);
+    }
+
+    uint8_t popStack8() {
         return memory[STACK_START + ++stackPointer];
+    }
+
+    uint16_t popStack16() {
+        uint8_t upper = popStack8();
+        uint8_t lower = popStack8();
+        return toUInt16(upper, lower);
     }
 
     void branchIfTrue(bool check) {
@@ -132,12 +150,19 @@ class CPU {
         zeroFlag = flags >> 1 & 1;
         interruptDisableFlag = flags >> 2 & 1;
         decimalFlag = flags >> 3 & 1;
-//        breakCommandFlag = flags >> 4 & 1;
         breakCommandFlag = true;
-//        unknownFlag = flags >> 5 & 1;
-        unknownFlag = true;
         overflowFlag = flags >> 6 & 1;
         negativeFlag = flags >> 7 & 1;
+    }
+
+    void addToARegister(uint8_t b) {
+        int sum = ARegister + b;
+        if (sum > 0xff) {
+            carryFlag = 1;
+        }
+        ARegister = sum;
+        zeroFlag = ARegister == 0;
+        negativeFlag = ARegister >> 7 != 0;
     }
 
 public:
@@ -151,23 +176,13 @@ public:
             switch (readOpCode()) {
                 case BRK : {
                     if (breakLocation > 0x00) {
-                        uint16_t counter = programCounter + 1;
-                        uint8_t lower = counter >> 8;
-                        uint8_t upper = (uint8_t) counter;
+                        pushStack16(programCounter + 1);
                         breakCommandFlag = true;
-                        pushToStack(lower);
-                        pushToStack(upper);
-                        pushToStack(flagsAsInt());
-                        upper = memory[breakLocation];
-                        lower = memory[breakLocation+1];
-                        counter = lower << 8 | upper;
-                        programCounter = counter;
+                        pushStack8(flagsAsInt());
+                        programCounter = read16From(breakLocation);
                     }
-                    std::cout << "BRK encountered" << std::endl;
                     return;
                 }
-
-
                 case CLC :
                     carryFlag = false;
                     break;
@@ -178,10 +193,7 @@ public:
                     programCounter = locationAbsolute();
                     break;
                 case JMP_Indir: {
-                    uint16_t indirect = locationAbsolute();
-                    uint8_t upper = memory[indirect];
-                    uint8_t lower = memory[indirect + 1];
-                    programCounter = toUInt16(upper, lower);
+                    programCounter = read16From(locationAbsolute());
                     break;
                 }
                     // ADC : ADd with Carry
@@ -425,30 +437,24 @@ public:
                     setXRegister(stackPointer);
                     break;
                 case PHA :
-                    pushToStack(ARegister);
+                    pushStack8(ARegister);
                     break;
                 case PLA :
-                    setARegister(popFromStack());
+                    setARegister(popStack8());
                     break;
                 case PHP :
-                    pushToStack(flagsAsInt());
+                    pushStack8(flagsAsInt());
                     break;
                 case PLP :
-                    intToFlags(popFromStack());
+                    intToFlags(popStack8());
                     break;
                 case JSR_Ab : {
-                    uint16_t counter = programCounter + 1;
-                    uint8_t lower = counter >> 8;
-                    uint8_t upper = (uint8_t) counter;
-                    pushToStack(lower);
-                    pushToStack(upper);
+                    pushStack16(programCounter + 1);
                     programCounter = locationAbsolute();
                     break;
                 }
                 case RTS : {
-                    uint8_t upper = popFromStack();
-                    uint8_t lower = popFromStack();
-                    uint16_t counter = lower << 8 | upper;
+                    uint16_t counter = popStack16();
                     programCounter = counter + 1;
                     break;
                 }
@@ -479,16 +485,6 @@ public:
 
     void setARegister(uint8_t aRegister) {
         ARegister = aRegister;
-        zeroFlag = ARegister == 0;
-        negativeFlag = ARegister >> 7 != 0;
-    }
-
-    void addToARegister(uint8_t b) {
-        int sum = ARegister + b;
-        if (sum > 0xff) {
-            carryFlag = 1;
-        }
-        ARegister = sum;
         zeroFlag = ARegister == 0;
         negativeFlag = ARegister >> 7 != 0;
     }
@@ -533,6 +529,10 @@ public:
         return carryFlag;
     }
 
+    void setCarryFlag(bool carryFlag) {
+        CPU::carryFlag = carryFlag;
+    }
+
     bool isNegativeFlag() const {
         return negativeFlag;
     }
@@ -541,12 +541,12 @@ public:
         CPU::negativeFlag = negativeFlag;
     }
 
-    void setCarryFlag(bool carryFlag) {
-        CPU::carryFlag = carryFlag;
-    }
-
     bool isOverflowFlag() const {
         return overflowFlag;
+    }
+
+    void setOverflowFlag(bool overflowFlag) {
+        CPU::overflowFlag = overflowFlag;
     }
 
     bool isBreakCommandFlag() const {
@@ -555,10 +555,6 @@ public:
 
     void setBreakCommandFlag(bool breakCommandFlag) {
         CPU::breakCommandFlag = breakCommandFlag;
-    }
-
-    void setOverflowFlag(bool overflowFlag) {
-        CPU::overflowFlag = overflowFlag;
     }
 
     uint8_t getStackPointer() const {
