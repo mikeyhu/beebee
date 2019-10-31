@@ -235,7 +235,7 @@ public:
                 case AND_ZX :
                     setARegister(ARegister & readZeroPageX());
                     break;
-                    // AND : bitwise AND with accumulator
+                    // EOR : bitwise Exclusive OR with accumulator
                 case ExclusiveOR_I :
                     setARegister(ARegister ^ readImmediate());
                     break;
@@ -254,7 +254,25 @@ public:
                 case ExclusiveOR_ZX :
                     setARegister(ARegister ^ readZeroPageX());
                     break;
-
+                    // ORA : bitwise OR with accumulator
+                case ORwithAcc_I :
+                    setARegister(ARegister | readImmediate());
+                    break;
+                case ORwithAcc_Ab :
+                    setARegister(ARegister | readAbsolute());
+                    break;
+                case ORwithAcc_AbX :
+                    setARegister(ARegister | readAbsoluteX());
+                    break;
+                case ORwithAcc_AbY :
+                    setARegister(ARegister | readAbsoluteY());
+                    break;
+                case ORwithAcc_Z :
+                    setARegister(ARegister | readZeroPage());
+                    break;
+                case ORwithAcc_ZX :
+                    setARegister(ARegister | readZeroPageX());
+                    break;
                     // Branch
                 case BranchonCarryClear :
                     branchIfTrue(!carryFlag);

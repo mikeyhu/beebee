@@ -481,6 +481,49 @@ TEST(CPUBitwise, ExclusiveOR_ZX) {
     EXPECT_EQ(0x7F, cpu.getARegister());
 }
 
+// ORA : bitwise OR with accumulator
+TEST(CPUBitwise, ORwithAcc_I) {
+    std::array<uint8_t, 5> mem = {LoaDAcc_I, 0xF0, ORwithAcc_I, 0x8F, BReaK};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0xFF, cpu.getARegister());
+}
+
+TEST(CPUBitwise, ORwithAcc_Ab) {
+    std::array<uint8_t, 7> mem = {LoaDAcc_I, 0xF0, ORwithAcc_Ab, 0x06, 0x00, BReaK, 0x8F};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0xFF, cpu.getARegister());
+}
+
+TEST(CPUBitwise, ORwithAcc_AbX) {
+    std::array<uint8_t, 9> mem = {LoaDX_I, 0x02, LoaDAcc_I, 0xF0, ORwithAcc_AbX, 0x06, 0x00, BReaK, 0x8F};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0xFF, cpu.getARegister());
+}
+
+TEST(CPUBitwise, ORwithAcc_AbY) {
+    std::array<uint8_t, 9> mem = {LoaDY_I, 0x02, LoaDAcc_I, 0xF0, ORwithAcc_AbY, 0x06, 0x00, BReaK, 0x8F};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0xFF, cpu.getARegister());
+}
+
+TEST(CPUBitwise, ORwithAcc_Z) {
+    std::array<uint8_t, 6> mem = {LoaDAcc_I, 0xF0, ORwithAcc_Z, 0x05, BReaK, 0x8F};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0xFF, cpu.getARegister());
+}
+
+TEST(CPUBitwise, ORwithAcc_ZX) {
+    std::array<uint8_t, 9> mem = {LoaDX_I, 0x02, LoaDAcc_I, 0xF0, ORwithAcc_ZX, 0x05, BReaK, 0x8F};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0xFF, cpu.getARegister());
+}
+
 class CPUCompare : public ::testing::Test {
 
 };
