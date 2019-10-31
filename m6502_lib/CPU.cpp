@@ -174,7 +174,7 @@ public:
     void run() {
         for (;;) {
             switch (readOpCode()) {
-                case BRK : {
+                case BReaK : {
                     if (breakLocation > 0x00) {
                         pushStack16(programCounter + 1);
                         breakCommandFlag = true;
@@ -183,36 +183,36 @@ public:
                     }
                     return;
                 }
-                case CLC :
+                case CLearCarry :
                     carryFlag = false;
                     break;
-                case CLD :
+                case CLearDecimal :
                     decimalFlag = false;
                     break;
-                case JMP_Ab:
+                case JuMP_Ab:
                     programCounter = locationAbsolute();
                     break;
-                case JMP_Indir: {
+                case JuMP_Indir: {
                     programCounter = read16From(locationAbsolute());
                     break;
                 }
                     // ADC : ADd with Carry
-                case ADC_I :
+                case ADdwithCarry_I :
                     addToARegister(readImmediate());
                     break;
-                case ADC_Z :
+                case ADdwithCarry_Z :
                     addToARegister(readZeroPage());
                     break;
-                case ADC_ZX :
+                case ADdwithCarry_ZX :
                     addToARegister(readZeroPageX());
                     break;
-                case ADC_Ab :
+                case ADdwithCarry_Ab :
                     addToARegister(readAbsoluteY());
                     break;
-                case ADC_AbX :
+                case ADdwithCarry_AbX :
                     addToARegister(readAbsoluteX());
                     break;
-                case ADC_AbY :
+                case ADdwithCarry_AbY :
                     addToARegister(readAbsoluteY());
                     break;
 
@@ -236,235 +236,235 @@ public:
                     setARegister(ARegister & readZeroPageX());
                     break;
                     // AND : bitwise AND with accumulator
-                case EOR_I :
+                case ExclusiveOR_I :
                     setARegister(ARegister ^ readImmediate());
                     break;
-                case EOR_Ab :
+                case ExclusiveOR_Ab :
                     setARegister(ARegister ^ readAbsolute());
                     break;
-                case EOR_AbX :
+                case ExclusiveOR_AbX :
                     setARegister(ARegister ^ readAbsoluteX());
                     break;
-                case EOR_AbY :
+                case ExclusiveOR_AbY :
                     setARegister(ARegister ^ readAbsoluteY());
                     break;
-                case EOR_Z :
+                case ExclusiveOR_Z :
                     setARegister(ARegister ^ readZeroPage());
                     break;
-                case EOR_ZX :
+                case ExclusiveOR_ZX :
                     setARegister(ARegister ^ readZeroPageX());
                     break;
 
                     // Branch
-                case BCC_Re :
+                case BranchonCarryClear :
                     branchIfTrue(!carryFlag);
                     break;
-                case BCS_Re :
+                case BranchonCarrySet :
                     branchIfTrue(carryFlag);
                     break;
-                case BNE_Re :
+                case BranchonNotEqual :
                     branchIfTrue(!zeroFlag);
                     break;
-                case BEQ_Re :
+                case BranchonEQual :
                     branchIfTrue(zeroFlag);
                     break;
-                case BPL_Re :
+                case BranchonPLus :
                     branchIfTrue(!negativeFlag);
                     break;
-                case BMI_Re :
+                case BranchonMInus :
                     branchIfTrue(negativeFlag);
                     break;
-                case BVC_Re :
+                case BranchonoVerflowClear :
                     branchIfTrue(!overflowFlag);
                     break;
-                case BVS_Re :
+                case BranchonoVerflowSet :
                     branchIfTrue(overflowFlag);
                     break;
                     // Compare
-                case CMP_I :
+                case CoMPareacc_I :
                     compareRegisterTo(ARegister, readImmediate());
                     break;
-                case CMP_Z :
+                case CoMPareacc_Z :
                     compareRegisterTo(ARegister, readZeroPage());
                     break;
-                case CMP_ZX :
+                case CoMPareacc_ZX :
                     compareRegisterTo(ARegister, readZeroPageX());
                     break;
-                case CMP_Ab :
+                case CoMPareacc_Ab :
                     compareRegisterTo(ARegister, readAbsolute());
                     break;
-                case CMP_AbX :
+                case CoMPareacc_AbX :
                     compareRegisterTo(ARegister, readAbsoluteX());
                     break;
-                case CMP_AbY :
+                case CoMPareacc_AbY :
                     compareRegisterTo(ARegister, readAbsoluteY());
                     break;
-                case CPX_I :
+                case ComPareX_I :
                     compareRegisterTo(XRegister, readImmediate());
                     break;
-                case CPX_Ab :
+                case ComPareX_Ab :
                     compareRegisterTo(XRegister, readAbsolute());
                     break;
-                case CPX_Z :
+                case ComPareX_Z :
                     compareRegisterTo(XRegister, readZeroPage());
                     break;
-                case CPY_I :
+                case ComPareY_I :
                     compareRegisterTo(YRegister, readImmediate());
                     break;
-                case CPY_Ab :
+                case ComPareY_Ab :
                     compareRegisterTo(YRegister, readAbsolute());
                     break;
-                case CPY_Z :
+                case ComPareY_Z :
                     compareRegisterTo(YRegister, readZeroPage());
                     break;
 
                     //IN : INcremement
-                case INX :
+                case INcrementX :
                     setXRegister(XRegister + 1);
                     break;
-                case INY :
+                case INcrementY :
                     setYRegister(YRegister + 1);
                     break;
 
                     //DE : DEcremement
-                case DEX :
+                case DEcrementX :
                     setXRegister(XRegister - 1);
                     break;
-                case DEY :
+                case DEcrementY :
                     setYRegister(YRegister - 1);
                     break;
 
                     // LDA : LoaD Accumulator
-                case LDA_I :
+                case LoaDAcc_I :
                     setARegister(readImmediate());
                     break;
-                case LDA_Ab :
+                case LoaDAcc_Ab :
                     setARegister(readAbsolute());
                     break;
-                case LDA_AbX :
+                case LoaDAcc_AbX :
                     setARegister(readAbsoluteX());
                     break;
-                case LDA_AbY :
+                case LoaDAcc_AbY :
                     setARegister(readAbsoluteY());
                     break;
-                case LDA_Z :
+                case LoaDAcc_Z :
                     setARegister(readZeroPage());
                     break;
-                case LDA_ZX :
+                case LoaDAcc_ZX :
                     setARegister(readZeroPageX());
                     break;
 
                     // LDX : LoaD Xregister
-                case LDX_I :
+                case LoaDX_I :
                     setXRegister(readImmediate());
                     break;
-                case LDX_Ab :
+                case LoaDX_Ab :
                     setXRegister(readAbsolute());
                     break;
-                case LDX_AbY :
+                case LoaDX_AbY :
                     setXRegister(readAbsoluteY());
                     break;
-                case LDX_Z :
+                case LoaDX_Z :
                     setXRegister(readZeroPage());
                     break;
-                case LDX_ZX :
+                case LoaDX_ZX :
                     setXRegister(readZeroPageX());
                     break;
 
                     // LDY : LoaD Yregister
-                case LDY_I :
+                case LoaDY_I :
                     setYRegister(readImmediate());
                     break;
-                case LDY_Ab :
+                case LoaDY_Ab :
                     setYRegister(readAbsolute());
                     break;
-                case LDY_AbX :
+                case LoaDY_AbX :
                     setYRegister(readAbsoluteX());
                     break;
-                case LDY_Z :
+                case LoaDY_Z :
                     setYRegister(readZeroPage());
                     break;
-                case LDY_ZX :
+                case LoaDY_ZX :
                     setYRegister(readZeroPageX());
                     break;
 
                     //STA : STore Accumulator
-                case STA_Ab :
+                case SToreAcc_Ab :
                     memory[locationAbsolute()] = ARegister;
                     break;
-                case STA_AbX :
+                case SToreAcc_AbX :
                     memory[locationAbsoluteX()] = ARegister;
                     break;
-                case STA_AbY :
+                case SToreAcc_AbY :
                     memory[locationAbsoluteY()] = ARegister;
                     break;
-                case STA_Z :
+                case SToreAcc_Z :
                     memory[locationZeroPage()] = ARegister;
                     break;
-                case STA_ZX :
+                case SToreAcc_ZX :
                     memory[locationZeroPageX()] = ARegister;
                     break;
                     //STX : STore Xregister
-                case STX_Ab :
+                case SToreX_Ab :
                     memory[locationAbsolute()] = XRegister;
                     break;
-                case STX_Z :
+                case SToreX_Z :
                     memory[locationZeroPage()] = XRegister;
                     break;
-                case STX_ZY :
+                case SToreX_ZY :
                     memory[locationZeroPageY()] = XRegister;
                     break;
 
                     // T : Transfer
-                case TAX:
+                case TransferAtoX:
                     setXRegister(ARegister);
                     break;
-                case TAY :
+                case TransferAtoY :
                     setYRegister(ARegister);
                     break;
-                case TXA:
+                case TransferXtoA:
                     setARegister(XRegister);
                     break;
-                case TYA:
+                case TransferYtoA:
                     setARegister(YRegister);
                     break;
-                case TXS :
+                case TransferXtoStack :
                     stackPointer = XRegister;
                     break;
 
                     //stack
-                case TSX :
+                case TransferStacktoX :
                     setXRegister(stackPointer);
                     break;
-                case PHA :
+                case PusHAcc :
                     pushStack8(ARegister);
                     break;
-                case PLA :
+                case PuLlAcc :
                     setARegister(popStack8());
                     break;
-                case PHP :
+                case PusHProcessorstatus :
                     pushStack8(flagsAsInt());
                     break;
-                case PLP :
+                case PuLlProcessorstatus :
                     intToFlags(popStack8());
                     break;
-                case JSR_Ab : {
+                case JumptoSubRoutine_Ab : {
                     pushStack16(programCounter + 1);
                     programCounter = locationAbsolute();
                     break;
                 }
-                case RTS : {
+                case ReTurnfromSubroutine : {
                     uint16_t counter = popStack16();
                     programCounter = counter + 1;
                     break;
                 }
-                case RTI : {
+                case ReTurnfromInterrupt : {
                     intToFlags(popStack8());
                     uint16_t counter = popStack16();
                     programCounter = counter;
                     break;
                 }
-                case NOP :
+                case NoOPeration :
                     break;
                 default:
                     std::cout << "Unknown OpCode:" << std::hex << (int) memory[programCounter - 1] << std::endl;
