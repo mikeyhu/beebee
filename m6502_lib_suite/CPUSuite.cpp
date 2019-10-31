@@ -24,5 +24,6 @@ int main() {
     cpu.setBreakLocation(0xfffe);
     cpu.run();
     cpu.run(); //return from break for test 11.
+    cpu.run(); //return from break for test 11 at 9f5.
     return 0;
 }

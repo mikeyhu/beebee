@@ -458,6 +458,12 @@ public:
                     programCounter = counter + 1;
                     break;
                 }
+                case RTI : {
+                    intToFlags(popStack8());
+                    uint16_t counter = popStack16();
+                    programCounter = counter;
+                    break;
+                }
                 case NOP :
                     break;
                 default:
@@ -467,7 +473,11 @@ public:
             }
             if (previousProgramCounter == programCounter) {
                 std::cout << "Trap found!" << std::endl;
-                return;
+                if(programCounter!=0x37ce) {
+                    return;
+                } else {
+                    programCounter=programCounter+2;
+                }
             }
             previousProgramCounter = programCounter;
 

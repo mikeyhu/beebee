@@ -814,3 +814,17 @@ TEST(CPUStack, RTS) {
     EXPECT_EQ(0xff, cpu.getARegister());
     EXPECT_EQ(0xff, cpu.getStackPointer());
 }
+
+TEST(CPUStack, RTI) {
+    std::array<uint8_t, 0x10> mem = {LDA_I, 0x00, PHA, LDA_I, 0x0b, PHA, LDA_I, 0xff, PHA, RTI, BRK, LDX_I, 0xff};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0x0e, cpu.getProgramCounter());
+    EXPECT_TRUE(cpu.isCarryFlag());
+    EXPECT_FALSE(cpu.isZeroFlag());
+    EXPECT_TRUE(cpu.isDecimalFlag());
+    EXPECT_TRUE(cpu.isOverflowFlag());
+    EXPECT_TRUE(cpu.isNegativeFlag());
+
+    EXPECT_EQ(0xff, cpu.getXRegister());
+}
