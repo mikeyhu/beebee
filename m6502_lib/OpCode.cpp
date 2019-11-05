@@ -168,9 +168,9 @@ enum OpCode {
     SuBtractwithCarry_IndexIndir = 0xe1,  // SBC ($NN,X) Indexed Indirect $e1 CZ- - - VN
     SuBtractwithCarry_IndirIndex = 0xf1,  // SBC ($NN),Y Indirect Indexed $f1 CZ- - - VN
 
-    SEtCarry_I = 0x38,           // SEC Implied $38 C- - - - - -
-    SEtDecimal_I = 0xf8,           // SED Implied $f8 - - - D- - -
-    SEtInterrupt_I = 0x78,           // SEI Implied $78 - - I- - - -
+    SEtCarry = 0x38,           // SEC Implied $38 C- - - - - -
+    SEtDecimal = 0xf8,           // SED Implied $f8 - - - D- - -
+    SEtInterrupt = 0x78,           // SEI Implied $78 - - I- - - -
 
     SToreAcc_Ab = 0x8d,          // STA $NNNN Absolute $8d - - - - - - -
     SToreAcc_AbX = 0x9d,         // STA $NNNN,X Absolute,X $9d - - - - - - -

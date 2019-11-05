@@ -186,8 +186,23 @@ public:
                 case CLearCarry :
                     carryFlag = false;
                     break;
+                case SEtCarry :
+                    carryFlag = true;
+                    break;
                 case CLearDecimal :
                     decimalFlag = false;
+                    break;
+                case SEtDecimal :
+                    decimalFlag = true;
+                    break;
+                case CLearInterrupt :
+                    interruptDisableFlag = false;
+                    break;
+                case SEtInterrupt :
+                    interruptDisableFlag = true;
+                    break;
+                case CLearoVerflow :
+                    overflowFlag = false;
                     break;
                 case JuMP_Ab:
                     programCounter = locationAbsolute();
@@ -599,6 +614,14 @@ public:
 
     void setBreakLocation(uint16_t breakLocation) {
         CPU::breakLocation = breakLocation;
+    }
+
+    bool isInterruptDisableFlag() const {
+        return interruptDisableFlag;
+    }
+
+    void setInterruptDisableFlag(bool interruptDisableFlag) {
+        CPU::interruptDisableFlag = interruptDisableFlag;
     }
 
     const std::array<uint8_t, SIZE> &getMemory() const {

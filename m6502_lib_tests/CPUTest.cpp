@@ -288,12 +288,52 @@ TEST(CPUGeneral, CLearCarry) {
     EXPECT_FALSE(cpu.isCarryFlag());
 }
 
+TEST(CPUGeneral, SEtCarry) {
+    std::array<uint8_t, 2> mem = {SEtCarry, BReaK};
+    auto cpu = CPU(0, mem);
+    cpu.setCarryFlag(false);
+    cpu.run();
+    EXPECT_TRUE(cpu.isCarryFlag());
+}
+
 TEST(CPUGeneral, CLearDecimal) {
     std::array<uint8_t, 2> mem = {CLearDecimal, BReaK};
     auto cpu = CPU(0, mem);
     cpu.setDecimalFlag(true);
     cpu.run();
     EXPECT_FALSE(cpu.isDecimalFlag());
+}
+
+TEST(CPUGeneral, SEtDecimal) {
+    std::array<uint8_t, 2> mem = {SEtDecimal, BReaK};
+    auto cpu = CPU(0, mem);
+    cpu.setDecimalFlag(false);
+    cpu.run();
+    EXPECT_TRUE(cpu.isDecimalFlag());
+}
+
+TEST(CPUGeneral, CLearinterrupt) {
+    std::array<uint8_t, 2> mem = {CLearInterrupt, BReaK};
+    auto cpu = CPU(0, mem);
+    cpu.setInterruptDisableFlag(true);
+    cpu.run();
+    EXPECT_FALSE(cpu.isInterruptDisableFlag());
+}
+
+TEST(CPUGeneral, SEtInterrupt) {
+    std::array<uint8_t, 2> mem = {SEtInterrupt, BReaK};
+    auto cpu = CPU(0, mem);
+    cpu.setInterruptDisableFlag(false);
+    cpu.run();
+    EXPECT_TRUE(cpu.isInterruptDisableFlag());
+}
+
+TEST(CPUGeneral, CLearoVerflow) {
+    std::array<uint8_t, 2> mem = {CLearoVerflow, BReaK};
+    auto cpu = CPU(0, mem);
+    cpu.setOverflowFlag(true);
+    cpu.run();
+    EXPECT_FALSE(cpu.isOverflowFlag());
 }
 
 TEST(CPUGeneral, JuMP_Ab) {
