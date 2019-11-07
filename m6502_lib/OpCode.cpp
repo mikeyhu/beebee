@@ -114,7 +114,7 @@ enum OpCode {
     LoaDX_Ab = 0xae,          // LDX $NNNN Absolute $ae - Z- - - - N
     LoaDX_AbY = 0xbe,         // LDX $NNNN,Y Absolute,Y $be - Z- - - - N
     LoaDX_Z = 0xa6,           // LDX $NN Zero Page $a6 - Z- - - - N
-    LoaDX_ZX = 0xb6,          // LDX $NN,Y Zero Page,Y $b6 - Z- - - - N
+    LoaDX_ZY = 0xb6,          // LDX $NN,Y Zero Page,Y $b6 - Z- - - - N
 
     LoaDY_I = 0xa0,           // LDY #$NN Immediate $a0 - Z- - - - N
     LoaDY_Ab = 0xac,          // LDY $NNNN Absolute $ac - Z- - - - N

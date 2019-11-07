@@ -166,8 +166,8 @@ TEST(CPUGeneral, LoaDX_Z) {
     EXPECT_EQ(0x03, cpu.getProgramCounter());
 }
 
-TEST(CPUGeneral, LoaDX_ZX) {
-    std::array<uint8_t, 6> mem = {LoaDX_I, 0x02, LoaDX_ZX, 0x3, BReaK, 0x80};
+TEST(CPUGeneral, LoaDX_ZY) {
+    std::array<uint8_t, 6> mem = {LoaDY_I, 0x02, LoaDX_ZY, 0x3, BReaK, 0x80};
     auto cpu = CPU(0, mem);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getXRegister());

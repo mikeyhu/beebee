@@ -26,11 +26,13 @@ class CPU {
     uint16_t breakLocation = 0;
 
     uint16_t toUInt16(uint8_t a, uint8_t b) {
-        return b << 8 | a;
+        return b << 8u | a;
     }
 
     uint16_t readUInt16() {
-        return toUInt16(memory[programCounter++], memory[programCounter++]);
+        auto pcLow = programCounter++;
+        auto pcHigh = programCounter++;
+        return toUInt16(memory[pcLow], memory[pcHigh]);
     }
 
     uint16_t locationAbsolute() {
@@ -70,6 +72,10 @@ class CPU {
         return memory[locationZeroPageX()];
     }
 
+    uint8_t readZeroPageY() {
+        return memory[locationZeroPageY()];
+    }
+
     uint16_t locationAbsoluteX() {
         return locationAbsolute() + XRegister;
     }
@@ -101,7 +107,7 @@ class CPU {
     }
 
     void pushStack16(uint16_t value) {
-        uint8_t lower = value >> 8;
+        uint8_t lower = value >> 8u;
         uint8_t upper = (uint8_t) value;
         pushStack8(lower);
         pushStack8(upper);
@@ -129,6 +135,7 @@ class CPU {
     }
 
     void compareRegisterTo(uint8_t reg, uint8_t value) {
+        std::cout << "CMP reg:" << std::hex << (int) reg << " val:" << (int) value << std::endl;
         zeroFlag = value == reg;
         carryFlag = reg >= value;
         negativeFlag = reg < value;
@@ -136,23 +143,23 @@ class CPU {
 
     uint8_t flagsAsInt() {
         return carryFlag |
-               (zeroFlag << 1) |
-               (interruptDisableFlag << 2) |
-               (decimalFlag << 3) |
-               (true << 4) |
-               (true << 5) |
-               (overflowFlag << 6) |
-               (negativeFlag << 7);
+               (zeroFlag << 1u) |
+               (interruptDisableFlag << 2u) |
+               (decimalFlag << 3u) |
+               (true << 4u) |
+               (true << 5u) |
+               (overflowFlag << 6u) |
+               (negativeFlag << 7u);
     }
 
     void intToFlags(uint8_t flags) {
-        carryFlag = flags & 1;
-        zeroFlag = flags >> 1 & 1;
-        interruptDisableFlag = flags >> 2 & 1;
-        decimalFlag = flags >> 3 & 1;
+        carryFlag = flags & 1u;
+        zeroFlag = flags >> 1u & 1u;
+        interruptDisableFlag = flags >> 2u & 1u;
+        decimalFlag = flags >> 3u & 1u;
         breakCommandFlag = true;
-        overflowFlag = flags >> 6 & 1;
-        negativeFlag = flags >> 7 & 1;
+        overflowFlag = flags >> 6u & 1u;
+        negativeFlag = flags >> 7u & 1u;
     }
 
     void addToARegister(uint8_t b) {
@@ -168,6 +175,7 @@ class CPU {
 public:
     CPU(uint16_t programCounter, std::array<uint8_t, SIZE> memory) {
         this->programCounter = programCounter;
+        this->previousProgramCounter = programCounter;
         this->memory = memory;
     }
 
@@ -400,8 +408,8 @@ public:
                 case LoaDX_Z :
                     setXRegister(readZeroPage());
                     break;
-                case LoaDX_ZX :
-                    setXRegister(readZeroPageX());
+                case LoaDX_ZY :
+                    setXRegister(readZeroPageY());
                     break;
 
                     // LDY : LoaD Yregister
@@ -528,7 +536,7 @@ public:
 
     void setARegister(uint8_t aRegister) {
         ARegister = aRegister;
-        zeroFlag = ARegister == 0;
+        zeroFlag = ARegister == 0u;
         negativeFlag = ARegister >> 7 != 0;
     }
 
@@ -539,7 +547,7 @@ public:
     void setXRegister(uint8_t xRegister) {
         XRegister = xRegister;
         zeroFlag = XRegister == 0;
-        negativeFlag = XRegister >> 7 != 0;
+        negativeFlag = XRegister >> 7u != 0;
     }
 
     uint8_t getYRegister() const {
@@ -549,7 +557,7 @@ public:
     void setYRegister(uint8_t yRegister) {
         YRegister = yRegister;
         zeroFlag = YRegister == 0;
-        negativeFlag = YRegister >> 7 != 0;
+        negativeFlag = YRegister >> 7u != 0;
     }
 
     bool isDecimalFlag() const {
