@@ -133,6 +133,14 @@ TEST(CPUGeneral, LoaDAcc_ZX) {
     EXPECT_EQ(0x05, cpu.getProgramCounter());
 }
 
+TEST(CPUGeneral, LoaDAcc_ZX_wraparound) {
+    std::array<uint8_t, 6> mem = {LoaDX_I, 0x05, LoaDAcc_ZX, 0xff, BReaK, 0x80};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0x80, cpu.getARegister());
+    EXPECT_EQ(0x05, cpu.getProgramCounter());
+}
+
 // LDX : LoaD Xregister
 
 TEST(CPUGeneral, LoaDX_I) {

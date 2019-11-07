@@ -60,12 +60,12 @@ class CPU {
         return memory[locationZeroPage()];
     }
 
-    uint16_t locationZeroPageX() {
-        return locationZeroPage() + XRegister;
+    uint8_t locationZeroPageX() {
+        return (locationZeroPage() + XRegister) % 0x100;
     }
 
-    uint16_t locationZeroPageY() {
-        return locationZeroPage() + YRegister;
+    uint8_t locationZeroPageY() {
+        return (locationZeroPage() + YRegister) % 0x100;
     }
 
     uint8_t readZeroPageX() {
