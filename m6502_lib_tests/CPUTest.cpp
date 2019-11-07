@@ -134,7 +134,7 @@ TEST(CPUGeneral, LoaDAcc_ZX) {
 }
 
 TEST(CPUGeneral, LoaDAcc_ZX_wraparound) {
-    std::array<uint8_t, 6> mem = {LoaDX_I, 0x05, LoaDAcc_ZX, 0xff, BReaK, 0x80};
+    std::array<uint8_t, 6> mem = {LoaDX_I, 0x06, LoaDAcc_ZX, 0xff, BReaK, 0x80};
     auto cpu = CPU(0, mem);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getARegister());
@@ -283,6 +283,29 @@ TEST(CPUGeneral, SToreX_Z) {
 
 TEST(CPUGeneral, SToreX_ZY) {
     std::array<uint8_t, 8> mem = {LoaDX_I, 0x80, LoaDY_I, 0x02, SToreX_ZY, 0x05, BReaK, 0x00};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0x80, cpu.getMemory()[7]);
+}
+
+// STY : STore Yregister
+
+TEST(CPUGeneral, SToreY_Ab) {
+    std::array<uint8_t, 7> mem = {LoaDY_I, 0x80, SToreY_Ab, 0x06, 0x00, BReaK, 0x00};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0x80, cpu.getMemory()[6]);
+}
+
+TEST(CPUGeneral, SToreY_Z) {
+    std::array<uint8_t, 6> mem = {LoaDY_I, 0x80, SToreY_Z, 0x05, BReaK, 0x00};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0x80, cpu.getMemory()[5]);
+}
+
+TEST(CPUGeneral, SToreY_ZX) {
+    std::array<uint8_t, 8> mem = {LoaDY_I, 0x80, LoaDX_I, 0x02, SToreY_ZX, 0x05, BReaK, 0x00};
     auto cpu = CPU(0, mem);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getMemory()[7]);

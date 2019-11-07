@@ -455,7 +455,16 @@ public:
                 case SToreX_ZY :
                     memory[locationZeroPageY()] = XRegister;
                     break;
-
+                    //STY : STore Yregister
+                case SToreY_Ab :
+                    memory[locationAbsolute()] = YRegister;
+                    break;
+                case SToreY_Z :
+                    memory[locationZeroPage()] = YRegister;
+                    break;
+                case SToreY_ZX :
+                    memory[locationZeroPageX()] = YRegister;
+                    break;
                     // T : Transfer
                 case TransferAtoX:
                     setXRegister(ARegister);
