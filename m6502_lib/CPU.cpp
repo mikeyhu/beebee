@@ -3,6 +3,7 @@
 #include <array>
 #include <iostream>
 #include "OpCode.cpp"
+#include "Memory.cpp"
 
 template<std::size_t SIZE>
 
@@ -22,7 +23,7 @@ class CPU {
     bool decimalFlag = false;
     bool overflowFlag = false;
     bool negativeFlag = false;
-    std::array<uint8_t, SIZE> memory;
+    Memory<SIZE> memory;
     uint16_t breakLocation = 0;
 
     uint16_t toUInt16(uint8_t a, uint8_t b) {
@@ -30,9 +31,9 @@ class CPU {
     }
 
     uint16_t readUInt16() {
-        auto pcLow = programCounter++;
-        auto pcHigh = programCounter++;
-        return toUInt16(memory[pcLow], memory[pcHigh]);
+        auto result = memory.readUint16(programCounter++);
+        programCounter++;
+        return result;
     }
 
     uint16_t locationAbsolute() {
@@ -40,7 +41,7 @@ class CPU {
     }
 
     uint8_t readUInt8() {
-        return memory[programCounter++];
+        return memory.readUInt8(programCounter++);
     }
 
     OpCode readOpCode() {
@@ -53,27 +54,27 @@ class CPU {
     }
 
     uint8_t locationZeroPage() {
-        return readUInt8();
+        return memory.locationZeroPage(programCounter++);
     }
 
     uint8_t readZeroPage() {
-        return memory[locationZeroPage()];
+        return memory.readZeroPage(programCounter++);
     }
 
     uint8_t locationZeroPageX() {
-        return (locationZeroPage() + XRegister) % 0x100;
+        return memory.locationZeroPage(programCounter++, XRegister);
     }
 
     uint8_t locationZeroPageY() {
-        return (locationZeroPage() + YRegister) % 0x100;
+        return memory.locationZeroPage(programCounter++, YRegister);
     }
 
     uint8_t readZeroPageX() {
-        return memory[locationZeroPageX()];
+        return memory.readZeroPage(programCounter++, XRegister);
     }
 
     uint8_t readZeroPageY() {
-        return memory[locationZeroPageY()];
+        return memory.readZeroPage(programCounter++, YRegister);
     }
 
     uint16_t locationAbsoluteX() {
@@ -85,25 +86,25 @@ class CPU {
     }
 
     uint8_t readAbsoluteX() {
-        return memory[locationAbsoluteX()];
+        return memory.readUInt8(locationAbsoluteX());
     }
 
     uint8_t readAbsoluteY() {
-        return memory[locationAbsoluteY()];
+        return memory.readUInt8(locationAbsoluteY());
     }
 
     uint8_t readAbsolute() {
-        return memory[locationAbsolute()];
+        return memory.readUInt8(locationAbsolute());
     }
 
     uint16_t read16From(uint16_t location) {
-        uint8_t upper = memory[location];
-        uint8_t lower = memory[location+1];
+        uint8_t upper = memory.readUInt8(location);
+        uint8_t lower = memory.readUInt8(location + 1);
         return toUInt16(upper, lower);
     }
 
     void pushStack8(uint8_t value) {
-        memory[STACK_START + stackPointer--] = value;
+        memory.writeUInt8(STACK_START + stackPointer--, value);
     }
 
     void pushStack16(uint16_t value) {
@@ -114,7 +115,7 @@ class CPU {
     }
 
     uint8_t popStack8() {
-        return memory[STACK_START + ++stackPointer];
+        return memory.readUInt8(STACK_START + ++stackPointer);
     }
 
     uint16_t popStack16() {
@@ -173,10 +174,9 @@ class CPU {
     }
 
 public:
-    CPU(uint16_t programCounter, std::array<uint8_t, SIZE> memory) {
+    CPU(uint16_t programCounter, std::array<uint8_t, SIZE> memory) : memory(memory) {
         this->programCounter = programCounter;
         this->previousProgramCounter = programCounter;
-        this->memory = memory;
     }
 
     void run() {
@@ -431,39 +431,39 @@ public:
 
                     //STA : STore Accumulator
                 case SToreAcc_Ab :
-                    memory[locationAbsolute()] = ARegister;
+                    memory.writeUInt8(locationAbsolute(), ARegister);
                     break;
                 case SToreAcc_AbX :
-                    memory[locationAbsoluteX()] = ARegister;
+                    memory.writeUInt8(locationAbsoluteX(), ARegister);
                     break;
                 case SToreAcc_AbY :
-                    memory[locationAbsoluteY()] = ARegister;
+                    memory.writeUInt8(locationAbsoluteY(), ARegister);
                     break;
                 case SToreAcc_Z :
-                    memory[locationZeroPage()] = ARegister;
+                    memory.writeUInt8(locationZeroPage(), ARegister);
                     break;
                 case SToreAcc_ZX :
-                    memory[locationZeroPageX()] = ARegister;
+                    memory.writeUInt8(locationZeroPageX(), ARegister);
                     break;
                     //STX : STore Xregister
                 case SToreX_Ab :
-                    memory[locationAbsolute()] = XRegister;
+                    memory.writeUInt8(locationAbsolute(), XRegister);
                     break;
                 case SToreX_Z :
-                    memory[locationZeroPage()] = XRegister;
+                    memory.writeUInt8(locationZeroPage(), XRegister);
                     break;
                 case SToreX_ZY :
-                    memory[locationZeroPageY()] = XRegister;
+                    memory.writeUInt8(locationZeroPageY(), XRegister);
                     break;
                     //STY : STore Yregister
                 case SToreY_Ab :
-                    memory[locationAbsolute()] = YRegister;
+                    memory.writeUInt8(locationAbsolute(), YRegister);
                     break;
                 case SToreY_Z :
-                    memory[locationZeroPage()] = YRegister;
+                    memory.writeUInt8(locationZeroPage(), YRegister);
                     break;
                 case SToreY_ZX :
-                    memory[locationZeroPageX()] = YRegister;
+                    memory.writeUInt8(locationZeroPageX(), YRegister);
                     break;
                     // T : Transfer
                 case TransferAtoX:
@@ -517,16 +517,16 @@ public:
                 case NoOPeration :
                     break;
                 default:
-                    std::cout << "Unknown OpCode:" << std::hex << (int) memory[programCounter - 1] << std::endl;
+                    std::cout << "Unknown OpCode:" << std::hex << (int) memory.readUInt8(programCounter - 1) << std::endl;
                     printState();
                     return;
             }
             if (previousProgramCounter == programCounter) {
                 std::cout << "Trap found!" << std::endl;
-                if(programCounter!=0x37ce) {
+                if (programCounter != 0x37ce) {
                     return;
                 } else {
-                    programCounter=programCounter+2;
+                    programCounter = programCounter + 2;
                 }
             }
             previousProgramCounter = programCounter;
@@ -642,7 +642,7 @@ public:
     }
 
     const std::array<uint8_t, SIZE> &getMemory() const {
-        return memory;
+        return memory.getMemory();
     }
 
     void printState() {
@@ -659,8 +659,8 @@ public:
                   << " Z;" << zeroFlag
                   << " C;" << carryFlag;
         for (int i = stackPointer; i <= 0xff; i++) {
-            std::cout << " [" << i << ":" << (int) (uint8_t) memory[0x100 + i] << "]";
+            std::cout << " [" << i << ":" << (int) (uint8_t) memory.readUInt8(0x100 + i) << "]";
         }
-        std::cout << " testcase:" << (int) (uint8_t) memory[0x200] << std::endl;
+        std::cout << " testcase:" << (int) (uint8_t) memory.readUInt8(0x200) << std::endl;
     }
 };
