@@ -102,6 +102,15 @@ class CPU {
         return toUInt16(upper, lower);
     }
 
+    uint16_t locationIndirIndex() {
+        auto zp = readUInt8();
+        auto loc = read16From(zp);
+        return loc + YRegister;
+    }
+    uint8_t readIndirIndex() {
+        return memory[locationIndirIndex()];
+    }
+
     void pushStack8(uint8_t value) {
         memory[STACK_START + stackPointer--] = value;
     }
@@ -340,6 +349,9 @@ public:
                 case CoMPareacc_AbY :
                     compareRegisterTo(ARegister, readAbsoluteY());
                     break;
+                case CoMPareacc_IndirIndex :
+                    compareRegisterTo(ARegister, readIndirIndex());
+                    break;
                 case ComPareX_I :
                     compareRegisterTo(XRegister, readImmediate());
                     break;
@@ -394,6 +406,8 @@ public:
                 case LoaDAcc_ZX :
                     setARegister(readZeroPageX());
                     break;
+                case LoaDAcc_IndirIndex :
+                    setARegister(readIndirIndex());
 
                     // LDX : LoaD Xregister
                 case LoaDX_I :
@@ -444,6 +458,9 @@ public:
                     break;
                 case SToreAcc_ZX :
                     memory[locationZeroPageX()] = ARegister;
+                    break;
+                case SToreAcc_IndirIndex :
+                    memory[locationIndirIndex()] = ARegister;
                     break;
                     //STX : STore Xregister
                 case SToreX_Ab :
@@ -523,7 +540,9 @@ public:
             }
             if (previousProgramCounter == programCounter) {
                 std::cout << "Trap found!" << std::endl;
-                if(programCounter!=0x37ce) {
+                if(programCounter!=0x37ce &&
+                programCounter!=0x1704 &&
+                programCounter!=0x1726) {
                     return;
                 } else {
                     programCounter=programCounter+2;

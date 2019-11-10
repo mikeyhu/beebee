@@ -141,6 +141,14 @@ TEST(CPUGeneral, LoaDAcc_ZX_wraparound) {
     EXPECT_EQ(0x05, cpu.getProgramCounter());
 }
 
+TEST(CPUGeneral, LoaDAcc_IndirIndex) {
+    std::array<uint8_t, 8> mem = {LoaDY_I, 0x01, LoaDAcc_IndirIndex, 0x06, BReaK, 0x80, 0x04, 0x00};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0x80, cpu.getARegister());
+    EXPECT_EQ(0x06, cpu.getProgramCounter());
+}
+
 // LDX : LoaD Xregister
 
 TEST(CPUGeneral, LoaDX_I) {
@@ -259,6 +267,14 @@ TEST(CPUGeneral, SToreAcc_Z) {
 
 TEST(CPUGeneral, SToreAcc_ZX) {
     std::array<uint8_t, 8> mem = {LoaDAcc_I, 0x80, LoaDX_I, 0x02, SToreAcc_ZX, 0x05, BReaK, 0x00};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0x80, cpu.getARegister());
+    EXPECT_EQ(0x80, cpu.getMemory()[7]);
+}
+
+TEST(CPUGeneral, SToreAcc_IndirIndex) {
+    std::array<uint8_t, 10> mem = {LoaDAcc_I, 0x80, LoaDY_I, 0x01, SToreAcc_IndirIndex, 0x08, BReaK, 0x00, 0x06, 0x00};
     auto cpu = CPU(0, mem);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getARegister());
@@ -716,6 +732,14 @@ TEST(CPUCompare, CMP_AbX_CarryAndZero) {
 
 TEST(CPUCompare, CMP_AbY_CarryAndZero) {
     std::array<uint8_t, 16> mem = {LoaDAcc_I, 0xff, LoaDY_I, 0x02, CoMPareacc_AbY, 0x06, 0x00, 0x00, 0xff};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_TRUE(cpu.isZeroFlag());
+    EXPECT_TRUE(cpu.isCarryFlag());
+}
+
+TEST(CPUCompare, CoMPareacc_IndirIndex) {
+    std::array<uint8_t, 16> mem = {LoaDAcc_I, 0xff, LoaDY_I, 0x03, CoMPareacc_IndirIndex, 0x07, BReaK, 0x06, 0x00, 0xff};
     auto cpu = CPU(0, mem);
     cpu.run();
     EXPECT_TRUE(cpu.isZeroFlag());
