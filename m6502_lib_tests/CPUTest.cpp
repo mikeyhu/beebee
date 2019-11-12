@@ -146,8 +146,17 @@ TEST(CPUGeneral, LoaDAcc_IndirIndex) {
     auto cpu = CPU(0, mem);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getARegister());
-    EXPECT_EQ(0x06, cpu.getProgramCounter());
+    EXPECT_EQ(0x05, cpu.getProgramCounter());
 }
+
+TEST(CPUGeneral, LoaDAcc_IndexIndir) {
+    std::array<uint8_t, 8> mem = {LoaDX_I, 0x01, LoaDAcc_IndexIndir, 0x05, BReaK, 0x80, 0x05, 0x00};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0x80, cpu.getARegister());
+    EXPECT_EQ(0x05, cpu.getProgramCounter());
+}
+
 
 // LDX : LoaD Xregister
 
@@ -275,6 +284,14 @@ TEST(CPUGeneral, SToreAcc_ZX) {
 
 TEST(CPUGeneral, SToreAcc_IndirIndex) {
     std::array<uint8_t, 10> mem = {LoaDAcc_I, 0x80, LoaDY_I, 0x01, SToreAcc_IndirIndex, 0x08, BReaK, 0x00, 0x06, 0x00};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_EQ(0x80, cpu.getARegister());
+    EXPECT_EQ(0x80, cpu.getMemory()[7]);
+}
+
+TEST(CPUGeneral, SToreAcc_IndexIndir) {
+    std::array<uint8_t, 10> mem = {LoaDAcc_I, 0x80, LoaDX_I, 0x01, SToreAcc_IndexIndir, 0x07, BReaK, 0x00, 0x07, 0x00};
     auto cpu = CPU(0, mem);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getARegister());
@@ -609,6 +626,24 @@ TEST(CPUBitwise, ORwithAcc_ZX) {
     auto cpu = CPU(0, mem);
     cpu.run();
     EXPECT_EQ(0xFF, cpu.getARegister());
+}
+
+TEST(CPUBitwise, BIT_Z) {
+    std::array<uint8_t, 16> mem = {LoaDAcc_I, 0xff, BIT_Z, 0x05, BReaK, 0xff};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_FALSE(cpu.isZeroFlag());
+    EXPECT_TRUE(cpu.isNegativeFlag());
+    EXPECT_TRUE(cpu.isOverflowFlag());
+}
+
+TEST(CPUBitwise, BIT_Ab) {
+    std::array<uint8_t, 16> mem = {LoaDAcc_I, 0xff, BIT_Ab, 0x06, 0x00, BReaK, 0xff};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_FALSE(cpu.isZeroFlag());
+    EXPECT_TRUE(cpu.isNegativeFlag());
+    EXPECT_TRUE(cpu.isOverflowFlag());
 }
 
 class CPUCompare : public ::testing::Test {

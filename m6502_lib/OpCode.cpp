@@ -29,7 +29,6 @@ enum OpCode {
     ArithmeticShiftLeft_ZX = 0x16,          // ASL $NN,X Zero Page,X $16 CZ- - - - N
 
     BranchonCarryClear = 0x90,          // BCC $NN Relative $90 - - - - - - -
-
     BranchonCarrySet = 0xb0,          // BCS $NN Relative $b0 - - - - - - -
 
     BranchonEQual = 0xf0,          // BEQ $NN Relative $f0 - - - - - - -

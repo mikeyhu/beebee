@@ -111,6 +111,15 @@ class CPU {
         return memory[locationIndirIndex()];
     }
 
+    uint16_t locationIndexIndir() {
+        auto zp = locationZeroPageX();
+        return read16From(zp);
+    }
+
+    uint8_t readIndexIndir() {
+        return memory[locationIndexIndir()];
+    }
+
     void pushStack8(uint8_t value) {
         memory[STACK_START + stackPointer--] = value;
     }
@@ -179,6 +188,14 @@ class CPU {
         ARegister = sum;
         zeroFlag = ARegister == 0;
         negativeFlag = ARegister >> 7 != 0;
+    }
+
+    void bitToARegister(uint8_t mem) {
+        std::cout << std::hex << "BIT A:" << (int)ARegister << " ZP:" << (int)mem << std::endl;
+        auto bit = ARegister & mem;
+        setZeroFlag(bit ==0);
+        setNegativeFlag((mem & 0x80) << 7);
+        setOverflowFlag( (mem & 0x40) << 6);
     }
 
 public:
@@ -305,6 +322,13 @@ public:
                 case ORwithAcc_ZX :
                     setARegister(ARegister | readZeroPageX());
                     break;
+                    //BIT
+                case BIT_Z :
+                    bitToARegister(readZeroPage());
+                    break;
+                case BIT_Ab :
+                    bitToARegister(readAbsolute());
+                    break;
                     // Branch
                 case BranchonCarryClear :
                     branchIfTrue(!carryFlag);
@@ -408,7 +432,10 @@ public:
                     break;
                 case LoaDAcc_IndirIndex :
                     setARegister(readIndirIndex());
-
+                    break;
+                case LoaDAcc_IndexIndir :
+                    setARegister(readIndexIndir());
+                    break;
                     // LDX : LoaD Xregister
                 case LoaDX_I :
                     setXRegister(readImmediate());
@@ -461,6 +488,9 @@ public:
                     break;
                 case SToreAcc_IndirIndex :
                     memory[locationIndirIndex()] = ARegister;
+                    break;
+                case SToreAcc_IndexIndir :
+                    memory[locationIndexIndir()] = ARegister;
                     break;
                     //STX : STore Xregister
                 case SToreX_Ab :
