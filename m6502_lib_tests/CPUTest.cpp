@@ -781,6 +781,14 @@ TEST(CPUCompare, CoMPareacc_IndirIndex) {
     EXPECT_TRUE(cpu.isCarryFlag());
 }
 
+TEST(CPUCompare, CoMPareacc_IndexIndir) {
+    std::array<uint8_t, 16> mem = {LoaDAcc_I, 0xff, LoaDX_I, 0x03, CoMPareacc_IndexIndir, 0x04, BReaK, 0x09, 0x00, 0xff};
+    auto cpu = CPU(0, mem);
+    cpu.run();
+    EXPECT_TRUE(cpu.isZeroFlag());
+    EXPECT_TRUE(cpu.isCarryFlag());
+}
+
 class CPUBranch : public ::testing::Test {
 
 };

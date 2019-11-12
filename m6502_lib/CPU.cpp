@@ -376,6 +376,9 @@ public:
                 case CoMPareacc_IndirIndex :
                     compareRegisterTo(ARegister, readIndirIndex());
                     break;
+                case CoMPareacc_IndexIndir :
+                    compareRegisterTo(ARegister, readIndexIndir());
+                    break;
                 case ComPareX_I :
                     compareRegisterTo(XRegister, readImmediate());
                     break;
