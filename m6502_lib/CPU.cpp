@@ -349,6 +349,24 @@ public:
                     setARegister(setTo);
                     break;
                 }
+                case LogicalShiftRight_Acc : {
+                    auto setTo = ARegister >> 1u;
+                    setCarryFlag(ARegister & 1u);
+                    setARegister(setTo);
+                    break;
+                }
+                case ROtateLeft_Acc : {
+                    auto setTo = ARegister << 1u | carryFlag;
+                    setCarryFlag(ARegister & 0x80u);
+                    setARegister(setTo);
+                    break;
+                }
+                case ROtateRight_Acc : {
+                    auto setTo = ARegister >> 1u | (carryFlag << 7u);
+                    setCarryFlag(ARegister & 0x1u);
+                    setARegister(setTo);
+                    break;
+                }
                     // Branch
                 case BranchonCarryClear :
                     branchIfTrue(!carryFlag);

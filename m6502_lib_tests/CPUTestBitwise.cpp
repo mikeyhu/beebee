@@ -162,3 +162,38 @@ auto cpu = CPU(0, mem, cycleCallback);
 cpu.run();
 EXPECT_EQ(0x02, cpu.getARegister());
 }
+
+TEST(CPUBitwise, LogicalShiftRight_Acc_nonzero) {
+    std::array<uint8_t, 16> mem = {LoaDAcc_I, 0x03, LogicalShiftRight_Acc, BReaK};
+    auto cpu = CPU(0, mem, cycleCallback);
+    cpu.run();
+    EXPECT_EQ(0x01, cpu.getARegister());
+    EXPECT_TRUE(cpu.isCarryFlag());
+}
+
+TEST(CPUBitwise, LogicalShiftRight_Acc_zero) {
+    std::array<uint8_t, 16> mem = {LoaDAcc_I, 0x01, LogicalShiftRight_Acc, BReaK};
+    auto cpu = CPU(0, mem, cycleCallback);
+    cpu.run();
+    EXPECT_EQ(0x0, cpu.getARegister());
+    EXPECT_TRUE(cpu.isZeroFlag());
+    EXPECT_TRUE(cpu.isCarryFlag());
+}
+
+TEST(CPUBitwise, ROtateLeft_Acc) {
+    std::array<uint8_t, 16> mem = {LoaDAcc_I, 0x81, ROtateLeft_Acc, BReaK};
+    auto cpu = CPU(0, mem, cycleCallback);
+    cpu.run();
+    EXPECT_EQ(0x2, cpu.getARegister());
+    EXPECT_FALSE(cpu.isZeroFlag());
+    EXPECT_TRUE(cpu.isCarryFlag());
+}
+
+TEST(CPUBitwise, ROtateRight_Acc) {
+    std::array<uint8_t, 16> mem = {LoaDAcc_I, 0x3, ROtateRight_Acc, BReaK};
+    auto cpu = CPU(0, mem, cycleCallback);
+    cpu.run();
+    EXPECT_EQ(0x1, cpu.getARegister());
+    EXPECT_FALSE(cpu.isZeroFlag());
+    EXPECT_TRUE(cpu.isCarryFlag());
+}
