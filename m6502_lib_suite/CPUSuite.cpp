@@ -20,10 +20,18 @@ int main() {
         mem[i] = buffer[i];
     }
 
-    auto cpu = CPU(0x400, mem);
+    int32_t cycles = 0;
+
+    auto cycleCallback = [&cycles]() -> void
+    {
+        cycles++;
+    };
+
+    auto cpu = CPU(0x400, mem, cycleCallback);
     cpu.setBreakLocation(0xfffe);
     cpu.run();
     cpu.run(); //return from break for test 11.
     cpu.run(); //return from break for test 11 at 9f5.
+    std::cout << std::dec << "cycles:" << cycles << std::endl;
     return 0;
 }

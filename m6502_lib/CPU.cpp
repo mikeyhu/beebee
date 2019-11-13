@@ -22,6 +22,7 @@ class CPU {
     bool decimalFlag = false;
     bool overflowFlag = false;
     bool negativeFlag = false;
+    std::function<void ()> cycleCallback;
     std::array<uint8_t, SIZE> memory;
     uint16_t breakLocation = 0;
 
@@ -199,7 +200,8 @@ class CPU {
     }
 
 public:
-    CPU(uint16_t programCounter, std::array<uint8_t, SIZE> memory) {
+    CPU(uint16_t programCounter, std::array<uint8_t, SIZE> memory, std::function<void ()> cycle) {
+        this->cycleCallback = cycle;
         this->programCounter = programCounter;
         this->previousProgramCounter = programCounter;
         this->memory = memory;
@@ -582,7 +584,7 @@ public:
                 }
             }
             previousProgramCounter = programCounter;
-
+            cycleCallback();
             printState();
         }
     }
