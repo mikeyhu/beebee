@@ -199,6 +199,10 @@ class CPU {
         setOverflowFlag( (mem & 0x40) << 6);
     }
 
+    void eorToARegister(uint8_t mem) {
+        setARegister(ARegister ^ mem);
+    }
+
 public:
     CPU(uint16_t programCounter, std::array<uint8_t, SIZE> memory, std::function<void ()> cycle) {
         this->cycleCallback = cycle;
@@ -288,22 +292,22 @@ public:
                     break;
                     // EOR : bitwise Exclusive OR with accumulator
                 case ExclusiveOR_I :
-                    setARegister(ARegister ^ readImmediate());
+                    eorToARegister(readImmediate());
                     break;
                 case ExclusiveOR_Ab :
-                    setARegister(ARegister ^ readAbsolute());
+                    eorToARegister(readAbsolute());
                     break;
                 case ExclusiveOR_AbX :
-                    setARegister(ARegister ^ readAbsoluteX());
+                    eorToARegister(readAbsoluteX());
                     break;
                 case ExclusiveOR_AbY :
-                    setARegister(ARegister ^ readAbsoluteY());
+                    eorToARegister(readAbsoluteY());
                     break;
                 case ExclusiveOR_Z :
-                    setARegister(ARegister ^ readZeroPage());
+                    eorToARegister(readZeroPage());
                     break;
                 case ExclusiveOR_ZX :
-                    setARegister(ARegister ^ readZeroPageX());
+                    eorToARegister(readZeroPageX());
                     break;
                     // ORA : bitwise OR with accumulator
                 case ORwithAcc_I :
