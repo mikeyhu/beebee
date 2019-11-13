@@ -203,6 +203,14 @@ class CPU {
         setARegister(ARegister ^ mem);
     }
 
+    void andToARegister(uint8_t mem) {
+        setARegister(ARegister & mem);
+    }
+
+    void orToARegister(uint8_t mem) {
+        setARegister(ARegister | mem);
+    }
+
 public:
     CPU(uint16_t programCounter, std::array<uint8_t, SIZE> memory, std::function<void ()> cycle) {
         this->cycleCallback = cycle;
@@ -273,22 +281,22 @@ public:
 
                     // AND : bitwise AND with accumulator
                 case AND_I :
-                    setARegister(ARegister & readImmediate());
+                    andToARegister(readImmediate());
                     break;
                 case AND_Ab :
-                    setARegister(ARegister & readAbsolute());
+                    andToARegister(readAbsolute());
                     break;
                 case AND_AbX :
-                    setARegister(ARegister & readAbsoluteX());
+                    andToARegister(readAbsoluteX());
                     break;
                 case AND_AbY :
-                    setARegister(ARegister & readAbsoluteY());
+                    andToARegister(readAbsoluteY());
                     break;
                 case AND_Z :
-                    setARegister(ARegister & readZeroPage());
+                    andToARegister(readZeroPage());
                     break;
                 case AND_ZX :
-                    setARegister(ARegister & readZeroPageX());
+                    andToARegister(readZeroPageX());
                     break;
                     // EOR : bitwise Exclusive OR with accumulator
                 case ExclusiveOR_I :
@@ -311,22 +319,22 @@ public:
                     break;
                     // ORA : bitwise OR with accumulator
                 case ORwithAcc_I :
-                    setARegister(ARegister | readImmediate());
+                    orToARegister(readImmediate());
                     break;
                 case ORwithAcc_Ab :
-                    setARegister(ARegister | readAbsolute());
+                    orToARegister(readAbsolute());
                     break;
                 case ORwithAcc_AbX :
-                    setARegister(ARegister | readAbsoluteX());
+                    orToARegister(readAbsoluteX());
                     break;
                 case ORwithAcc_AbY :
-                    setARegister(ARegister | readAbsoluteY());
+                    orToARegister(readAbsoluteY());
                     break;
                 case ORwithAcc_Z :
-                    setARegister(ARegister | readZeroPage());
+                    orToARegister(readZeroPage());
                     break;
                 case ORwithAcc_ZX :
-                    setARegister(ARegister | readZeroPageX());
+                    orToARegister(readZeroPageX());
                     break;
                     //BIT
                 case BIT_Z :
