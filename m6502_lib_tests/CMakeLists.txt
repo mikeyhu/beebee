@@ -6,7 +6,13 @@ include_directories(${gmock_SOURCE_DIR}/include ${gmock_SOURCE_DIR})
 # All from https://www.jetbrains.com/help/clion/unit-testing-tutorial.html
 
 # adding the Google_Tests_run target
-add_executable(m6502_lib_tests CPUTest.cpp)
+add_executable(m6502_lib_tests
+        CPUTest.cpp
+        CPUTestBitwise.cpp
+        CPUTestCompare.cpp
+        CPUTestBranch.cpp
+        CPUTestStack.cpp
+        Helpers.cpp)
 
 target_link_libraries(m6502_lib_tests m6502_lib)
 
