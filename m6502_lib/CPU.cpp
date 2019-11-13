@@ -335,6 +335,12 @@ public:
                 case BIT_Ab :
                     bitToARegister(readAbsolute());
                     break;
+                case ArithmeticShiftLeft_Ac : {
+                    auto setTo = ARegister << 1u;
+                    setCarryFlag(setTo>0xff);
+                    setARegister(setTo);
+                    break;
+                }
                     // Branch
                 case BranchonCarryClear :
                     branchIfTrue(!carryFlag);
