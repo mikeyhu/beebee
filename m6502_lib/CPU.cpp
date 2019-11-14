@@ -181,6 +181,11 @@ class CPU {
         negativeFlag = flags >> 7u & 1u;
     }
 
+    void setFlagsBasedOnValue(uint8_t value) {
+        zeroFlag = value == 0u;
+        negativeFlag = value >> 7 != 0;
+    }
+
     void addToARegister(uint8_t b) {
         int sum = ARegister + b;
         if (sum > 0xff) {
@@ -209,6 +214,32 @@ class CPU {
 
     void orToARegister(uint8_t mem) {
         setARegister(ARegister | mem);
+    }
+
+    void rorToARegister(uint8_t mem) {
+        auto setTo = mem >> 1u | (carryFlag << 7u);
+        setCarryFlag(mem & 0x1u);
+        setARegister(setTo);
+    }
+
+    void aslToARegister(uint8_t mem) {
+        auto setTo = mem << 1u;
+        setCarryFlag(setTo>0xff);
+        setARegister(setTo);
+    }
+
+    void aslToMem(uint16_t location) {
+        auto mem = memory[location];
+        auto setTo = mem << 1u;
+        setCarryFlag(setTo>0xff);
+        setFlagsBasedOnValue(setTo);
+        memory[location]=setTo;
+    }
+
+    void lsrToARegister(uint8_t mem) {
+       auto setTo = mem >> 1u;
+       setCarryFlag(mem & 1u);
+       setARegister(setTo);
     }
 
 public:
@@ -343,30 +374,27 @@ public:
                 case BIT_Ab :
                     bitToARegister(readAbsolute());
                     break;
-                case ArithmeticShiftLeft_Ac : {
-                    auto setTo = ARegister << 1u;
-                    setCarryFlag(setTo>0xff);
-                    setARegister(setTo);
+                case ArithmeticShiftLeft_Ac :
+                    aslToARegister(ARegister);
                     break;
-                }
-                case LogicalShiftRight_Acc : {
-                    auto setTo = ARegister >> 1u;
-                    setCarryFlag(ARegister & 1u);
-                    setARegister(setTo);
+                case ArithmeticShiftLeft_Z :
+                    aslToMem(locationZeroPage());
                     break;
-                }
+                case LogicalShiftRight_Acc :
+                    lsrToARegister(ARegister);
+                    break;
                 case ROtateLeft_Acc : {
                     auto setTo = ARegister << 1u | carryFlag;
                     setCarryFlag(ARegister & 0x80u);
                     setARegister(setTo);
                     break;
                 }
-                case ROtateRight_Acc : {
-                    auto setTo = ARegister >> 1u | (carryFlag << 7u);
-                    setCarryFlag(ARegister & 0x1u);
-                    setARegister(setTo);
+                case ROtateRight_Acc :
+                    rorToARegister(ARegister);
                     break;
-                }
+                case ROtateRight_Z :
+                    rorToARegister(readZeroPage());
+                    break;
                     // Branch
                 case BranchonCarryClear :
                     branchIfTrue(!carryFlag);
@@ -635,8 +663,7 @@ public:
 
     void setARegister(uint8_t aRegister) {
         ARegister = aRegister;
-        zeroFlag = ARegister == 0u;
-        negativeFlag = ARegister >> 7 != 0;
+        setFlagsBasedOnValue(aRegister);
     }
 
     uint8_t getXRegister() const {
