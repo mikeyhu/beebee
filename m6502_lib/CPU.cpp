@@ -242,6 +242,14 @@ class CPU {
        setARegister(setTo);
     }
 
+    void lsrToMem(uint16_t location) {
+        auto mem = memory[location];
+        auto setTo = mem >> 1u;
+        setCarryFlag(mem & 1u);
+        setFlagsBasedOnValue(setTo);
+        memory[location]=setTo;
+    }
+
 public:
     CPU(uint16_t programCounter, std::array<uint8_t, SIZE> memory, std::function<void ()> cycle) {
         this->cycleCallback = cycle;
@@ -383,6 +391,9 @@ public:
                 case LogicalShiftRight_Acc :
                     lsrToARegister(ARegister);
                     break;
+                case LogicalShiftRight_Z :
+                    lsrToMem(locationZeroPage());
+                    break;
                 case ROtateLeft_Acc : {
                     auto setTo = ARegister << 1u | carryFlag;
                     setCarryFlag(ARegister & 0x80u);
@@ -521,7 +532,6 @@ public:
                 case LoaDX_ZY :
                     setXRegister(readZeroPageY());
                     break;
-
                     // LDY : LoaD Yregister
                 case LoaDY_I :
                     setYRegister(readImmediate());
