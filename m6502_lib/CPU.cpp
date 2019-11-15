@@ -404,11 +404,17 @@ public:
                 case ArithmeticShiftLeft_Z :
                     aslToMem(locationZeroPage());
                     break;
+                case ArithmeticShiftLeft_Ab :
+                    aslToMem(locationAbsolute());
+                    break;
                 case LogicalShiftRight_Acc :
                     lsrToARegister(ARegister);
                     break;
                 case LogicalShiftRight_Z :
                     lsrToMem(locationZeroPage());
+                    break;
+                case LogicalShiftRight_Ab :
+                    lsrToMem(locationAbsolute());
                     break;
                 case ROtateLeft_Acc : {
                     auto setTo = ARegister << 1u | carryFlag;
@@ -418,6 +424,9 @@ public:
                 }
                 case ROtateLeft_Z :
                     rolToMem(locationZeroPage());
+                    break;
+                case ROtateLeft_Ab :
+                    rolToMem(locationAbsolute() );
                     break;
                 case ROtateRight_Acc :
                     rorToARegister(ARegister);
