@@ -250,6 +250,22 @@ class CPU {
         memory[location]=setTo;
     }
 
+    void rolToMem(uint16_t location) {
+        auto mem = memory[location];
+        auto setTo = mem << 1u | carryFlag;
+        setCarryFlag(mem & 0x80u);
+        setFlagsBasedOnValue(setTo);
+        memory[location]=setTo;
+    }
+
+    void rorToMem(uint16_t location) {
+        auto mem = memory[location];
+        auto setTo = mem >> 1u | (carryFlag << 7u);
+        setCarryFlag(mem & 0x1u);
+        setFlagsBasedOnValue(setTo);
+        memory[location]=setTo;
+    }
+
 public:
     CPU(uint16_t programCounter, std::array<uint8_t, SIZE> memory, std::function<void ()> cycle) {
         this->cycleCallback = cycle;
@@ -400,11 +416,14 @@ public:
                     setARegister(setTo);
                     break;
                 }
+                case ROtateLeft_Z :
+                    rolToMem(locationZeroPage());
+                    break;
                 case ROtateRight_Acc :
                     rorToARegister(ARegister);
                     break;
                 case ROtateRight_Z :
-                    rorToARegister(readZeroPage());
+                    rorToMem(locationZeroPage());
                     break;
                     // Branch
                 case BranchonCarryClear :
