@@ -663,7 +663,9 @@ public:
                     break;
                 default:
                     std::cout << "Unknown OpCode:" << std::hex << (int) memory[programCounter - 1] << std::endl;
+#ifndef NDEBUG
                     printState();
+#endif
                     return;
             }
             if (previousProgramCounter == programCounter) {
@@ -678,7 +680,9 @@ public:
             }
             previousProgramCounter = programCounter;
             cycleCallback();
+#ifndef NDEBUG
             printState();
+#endif
         }
     }
 
