@@ -405,8 +405,14 @@ public:
                 case ArithmeticShiftLeft_Z :
                     aslToMem(locationZeroPage());
                     break;
+                case ArithmeticShiftLeft_ZX :
+                    aslToMem(locationZeroPageX());
+                    break;
                 case ArithmeticShiftLeft_Ab :
                     aslToMem(locationAbsolute());
+                    break;
+                case ArithmeticShiftLeft_AbX :
+                    aslToMem(locationAbsoluteX());
                     break;
                 case LogicalShiftRight_Acc :
                     lsrToARegister(ARegister);
@@ -414,8 +420,14 @@ public:
                 case LogicalShiftRight_Z :
                     lsrToMem(locationZeroPage());
                     break;
+                case LogicalShiftRight_ZX :
+                    lsrToMem(locationZeroPageX());
+                    break;
                 case LogicalShiftRight_Ab :
                     lsrToMem(locationAbsolute());
+                    break;
+                case LogicalShiftRight_AbX :
+                    lsrToMem(locationAbsoluteX());
                     break;
                 case ROtateLeft_Acc : {
                     auto setTo = ARegister << 1u | carryFlag;
@@ -426,8 +438,14 @@ public:
                 case ROtateLeft_Z :
                     rolToMem(locationZeroPage());
                     break;
+                case ROtateLeft_ZX :
+                    rolToMem(locationZeroPageX());
+                    break;
                 case ROtateLeft_Ab :
-                    rolToMem(locationAbsolute() );
+                    rolToMem(locationAbsolute());
+                    break;
+                case ROtateLeft_AbX :
+                    rolToMem(locationAbsoluteX());
                     break;
                 case ROtateRight_Acc :
                     rorToARegister(ARegister);
@@ -435,8 +453,14 @@ public:
                 case ROtateRight_Z :
                     rorToMem(locationZeroPage());
                     break;
+                case ROtateRight_ZX :
+                    rorToMem(locationZeroPageX());
+                    break;
                 case ROtateRight_Ab :
                     rorToMem(locationAbsolute());
+                    break;
+                case ROtateRight_AbX :
+                    rorToMem(locationAbsoluteX());
                     break;
                     // Branch
                 case BranchonCarryClear :

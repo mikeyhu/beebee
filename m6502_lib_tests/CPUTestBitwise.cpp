@@ -171,12 +171,28 @@ TEST(CPUBitwise, ArithmeticShiftLeft_Z) {
     EXPECT_EQ(0x2, cpu.getMemory()[0x03]);
 }
 
+TEST(CPUBitwise, ArithmeticShiftLeft_ZX) {
+    std::array<uint8_t, 16> mem = {LoaDX_I, 0x02, ArithmeticShiftLeft_ZX, 0x03, BReaK, 0x01};
+    auto cpu = CPU(0, mem, cycleCallback);
+    cpu.run();
+    EXPECT_EQ(0x0, cpu.getARegister());
+    EXPECT_EQ(0x2, cpu.getMemory()[0x05]);
+}
+
 TEST(CPUBitwise, ArithmeticShiftLeft_Ab) {
     std::array<uint8_t, 16> mem = {ArithmeticShiftLeft_Ab, 0x04, 0x00, BReaK, 0x01};
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x0, cpu.getARegister());
     EXPECT_EQ(0x2, cpu.getMemory()[0x04]);
+}
+
+TEST(CPUBitwise, ArithmeticShiftLeft_AbX) {
+    std::array<uint8_t, 16> mem = {LoaDX_I, 0x02, ArithmeticShiftLeft_AbX, 0x04, 0x00, BReaK, 0x01};
+    auto cpu = CPU(0, mem, cycleCallback);
+    cpu.run();
+    EXPECT_EQ(0x0, cpu.getARegister());
+    EXPECT_EQ(0x2, cpu.getMemory()[0x06]);
 }
 
 TEST(CPUBitwise, LogicalShiftRight_Acc_nonzero) {
@@ -205,12 +221,30 @@ TEST(CPUBitwise, LogicalShiftRight_Z) {
     EXPECT_TRUE(cpu.isCarryFlag());
 }
 
+TEST(CPUBitwise, LogicalShiftRight_ZX) {
+    std::array<uint8_t, 16> mem = {LoaDX_I, 0x02, LogicalShiftRight_ZX, 0x03, BReaK, 0x03};
+    auto cpu = CPU(0, mem, cycleCallback);
+    cpu.run();
+    EXPECT_EQ(0x00, cpu.getARegister());
+    EXPECT_EQ(0x01, cpu.getMemory()[0x05]);
+    EXPECT_TRUE(cpu.isCarryFlag());
+}
+
 TEST(CPUBitwise, LogicalShiftRight_Ab) {
     std::array<uint8_t, 16> mem = {LogicalShiftRight_Ab, 0x04, 0x00, BReaK, 0x03};
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x00, cpu.getARegister());
     EXPECT_EQ(0x01, cpu.getMemory()[0x04]);
+    EXPECT_TRUE(cpu.isCarryFlag());
+}
+
+TEST(CPUBitwise, LogicalShiftRight_AbX) {
+    std::array<uint8_t, 16> mem = {LoaDX_I, 0x02, LogicalShiftRight_AbX, 0x04, 0x00, BReaK, 0x03};
+    auto cpu = CPU(0, mem, cycleCallback);
+    cpu.run();
+    EXPECT_EQ(0x00, cpu.getARegister());
+    EXPECT_EQ(0x01, cpu.getMemory()[0x06]);
     EXPECT_TRUE(cpu.isCarryFlag());
 }
 
@@ -233,12 +267,32 @@ TEST(CPUBitwise, ROtateLeft_Z) {
     EXPECT_TRUE(cpu.isCarryFlag());
 }
 
+TEST(CPUBitwise, ROtateLeft_ZX) {
+    std::array<uint8_t, 16> mem = {LoaDX_I, 0x02, ROtateLeft_ZX, 0x03, BReaK, 0x81};
+    auto cpu = CPU(0, mem, cycleCallback);
+    cpu.run();
+    EXPECT_EQ(0x0, cpu.getARegister());
+    EXPECT_EQ(0x2, cpu.getMemory()[0x05]);
+    EXPECT_FALSE(cpu.isZeroFlag());
+    EXPECT_TRUE(cpu.isCarryFlag());
+}
+
 TEST(CPUBitwise, ROtateLeft_Ab) {
     std::array<uint8_t, 16> mem = {ROtateLeft_Ab, 0x04, 0x00, BReaK, 0x81};
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x0, cpu.getARegister());
     EXPECT_EQ(0x2, cpu.getMemory()[0x04]);
+    EXPECT_FALSE(cpu.isZeroFlag());
+    EXPECT_TRUE(cpu.isCarryFlag());
+}
+
+TEST(CPUBitwise, ROtateLeft_AbX) {
+    std::array<uint8_t, 16> mem = {LoaDX_I, 0x02, ROtateLeft_AbX, 0x04, 0x00, BReaK, 0x81};
+    auto cpu = CPU(0, mem, cycleCallback);
+    cpu.run();
+    EXPECT_EQ(0x0, cpu.getARegister());
+    EXPECT_EQ(0x2, cpu.getMemory()[0x06]);
     EXPECT_FALSE(cpu.isZeroFlag());
     EXPECT_TRUE(cpu.isCarryFlag());
 }
@@ -262,12 +316,32 @@ TEST(CPUBitwise, ROtateRight_Z) {
     EXPECT_TRUE(cpu.isCarryFlag());
 }
 
+TEST(CPUBitwise, ROtateRight_ZX) {
+    std::array<uint8_t, 16> mem = {LoaDX_I, 0x02, ROtateRight_ZX, 0x3, BReaK, 0x3};
+    auto cpu = CPU(0, mem, cycleCallback);
+    cpu.run();
+    EXPECT_EQ(0x0, cpu.getARegister());
+    EXPECT_EQ(0x01, cpu.getMemory()[0x05]);
+    EXPECT_FALSE(cpu.isZeroFlag());
+    EXPECT_TRUE(cpu.isCarryFlag());
+}
+
 TEST(CPUBitwise, ROtateRight_Ab) {
     std::array<uint8_t, 16> mem = {ROtateRight_Ab, 0x4, 0x00, BReaK, 0x3};
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x0, cpu.getARegister());
     EXPECT_EQ(0x01, cpu.getMemory()[0x04]);
+    EXPECT_FALSE(cpu.isZeroFlag());
+    EXPECT_TRUE(cpu.isCarryFlag());
+}
+
+TEST(CPUBitwise, ROtateRight_AbX) {
+    std::array<uint8_t, 16> mem = {LoaDX_I, 0x02, ROtateRight_AbX, 0x4, 0x00, BReaK, 0x3};
+    auto cpu = CPU(0, mem, cycleCallback);
+    cpu.run();
+    EXPECT_EQ(0x0, cpu.getARegister());
+    EXPECT_EQ(0x01, cpu.getMemory()[0x06]);
     EXPECT_FALSE(cpu.isZeroFlag());
     EXPECT_TRUE(cpu.isCarryFlag());
 }
