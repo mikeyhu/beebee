@@ -150,8 +150,8 @@ enum OpCode {
     ROtateLeft_ZX = 0x36,          // ROL $NN,X Zero Page,X $36 CZ- - - - N
 
     ROtateRight_Acc = 0x6a,         // ROR A Accumulator $6a CZ- - - - N
-    ROtateRight_Ab = 0x7e,          // ROR $NNNN Absolute $7e CZ- - - - N
-    ROtateRight_AbX = 0x6e,         // ROR $NNNN,X Absolute,X $6e CZ- - - - N
+    ROtateRight_Ab = 0x6e,          // ROR $NNNN Absolute $7e CZ- - - - N
+    ROtateRight_AbX = 0x7e,         // ROR $NNNN,X Absolute,X $6e CZ- - - - N
     ROtateRight_Z = 0x66,           // ROR $NN Zero Page $66 CZ- - - - N
     ROtateRight_ZX = 0x76,          // ROR $NN,X Zero Page,X $76 CZ- - - - N
 

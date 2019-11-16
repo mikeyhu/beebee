@@ -262,12 +262,12 @@ TEST(CPUBitwise, ROtateRight_Z) {
     EXPECT_TRUE(cpu.isCarryFlag());
 }
 
-TEST(CPUBitwise, ROtateRight_AbX) {
-    std::array<uint8_t, 16> mem = {LoaDX_I, 0x03, ROtateRight_AbX, 0x3, 0x00, BReaK, 0x3};
+TEST(CPUBitwise, ROtateRight_Ab) {
+    std::array<uint8_t, 16> mem = {ROtateRight_Ab, 0x4, 0x00, BReaK, 0x3};
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x0, cpu.getARegister());
-    EXPECT_EQ(0x01, cpu.getMemory()[0x06]);
+    EXPECT_EQ(0x01, cpu.getMemory()[0x04]);
     EXPECT_FALSE(cpu.isZeroFlag());
     EXPECT_TRUE(cpu.isCarryFlag());
 }

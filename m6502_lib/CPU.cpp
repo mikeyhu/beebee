@@ -435,8 +435,8 @@ public:
                 case ROtateRight_Z :
                     rorToMem(locationZeroPage());
                     break;
-                case ROtateRight_AbX :
-                    rorToMem(locationAbsoluteX());
+                case ROtateRight_Ab :
+                    rorToMem(locationAbsolute());
                     break;
                     // Branch
                 case BranchonCarryClear :
@@ -681,21 +681,19 @@ public:
 #endif
                     return;
             }
+#ifndef NDEBUG
             if (previousProgramCounter == programCounter) {
                 std::cout << "Trap found!" << std::endl;
-                if(programCounter!=0x37ce &&
-                programCounter!=0x1704 &&
-                programCounter!=0x1726) {
+                if(programCounter!=0x37ce) {
                     return;
                 } else {
                     programCounter=programCounter+2;
                 }
             }
-            previousProgramCounter = programCounter;
-            cycleCallback();
-#ifndef NDEBUG
             printState();
 #endif
+            previousProgramCounter = programCounter;
+            cycleCallback();
         }
     }
 
