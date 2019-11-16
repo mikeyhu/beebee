@@ -435,6 +435,9 @@ public:
                 case ROtateRight_Z :
                     rorToMem(locationZeroPage());
                     break;
+                case ROtateRight_AbX :
+                    rorToMem(locationAbsoluteX());
+                    break;
                     // Branch
                 case BranchonCarryClear :
                     branchIfTrue(!carryFlag);
