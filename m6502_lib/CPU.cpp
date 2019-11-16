@@ -284,6 +284,7 @@ public:
                         pushStack8(flagsAsInt());
                         programCounter = read16From(breakLocation);
                     }
+                    printState();
                     return;
                 }
                 case CLearCarry :
