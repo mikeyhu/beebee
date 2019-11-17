@@ -328,12 +328,18 @@ class CPU {
             case ORwithAcc_AbY :
             case SToreAcc_AbY :
                 return locationAbsoluteY();
+            case AND_IndexIndir :
             case CoMPareacc_IndexIndir :
+            case ExclusiveOR_IndexIndir :
             case LoaDAcc_IndexIndir :
+            case ORwithAcc_IndexIndir :
             case SToreAcc_IndexIndir :
                 return locationIndexIndir();
+            case AND_IndirIndex :
             case CoMPareacc_IndirIndex :
+            case ExclusiveOR_IndirIndex :
             case LoaDAcc_IndirIndex :
+            case ORwithAcc_IndirIndex :
             case SToreAcc_IndirIndex :
                 return locationIndirIndex();
             default :
@@ -427,6 +433,8 @@ public:
                 case AND_Ab :
                 case AND_AbX :
                 case AND_AbY :
+                case AND_IndexIndir :
+                case AND_IndirIndex :
                     andToARegister(readByOperation(opCode));
                     break;
                     // EOR : bitwise Exclusive OR with accumulator
@@ -436,6 +444,8 @@ public:
                 case ExclusiveOR_AbY :
                 case ExclusiveOR_Z :
                 case ExclusiveOR_ZX :
+                case ExclusiveOR_IndexIndir :
+                case ExclusiveOR_IndirIndex :
                     eorToARegister(readByOperation(opCode));
                     break;
                     // ORA : bitwise OR with accumulator
@@ -445,6 +455,8 @@ public:
                 case ORwithAcc_AbY :
                 case ORwithAcc_Z :
                 case ORwithAcc_ZX :
+                case ORwithAcc_IndexIndir :
+                case ORwithAcc_IndirIndex :
                     orToARegister(readByOperation(opCode));
                     break;
                     //BIT
