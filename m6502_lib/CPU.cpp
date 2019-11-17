@@ -36,10 +36,6 @@ class CPU {
         return toUInt16(memory[pcLow], memory[pcHigh]);
     }
 
-    uint16_t locationAbsolute() {
-        return readUInt16();
-    }
-
     uint8_t readUInt8() {
         return memory[programCounter++];
     }
@@ -57,12 +53,8 @@ class CPU {
         return readUInt8();
     }
 
-    uint8_t locationZeroPageX() {
-        return (locationZeroPage() + XRegister) % 0x100;
-    }
-
-    uint8_t locationZeroPageY() {
-        return (locationZeroPage() + YRegister) % 0x100;
+    uint16_t locationAbsolute() {
+        return readUInt16();
     }
 
     uint16_t locationAbsoluteX() {
@@ -86,7 +78,7 @@ class CPU {
     }
 
     uint16_t locationIndexIndir() {
-        auto zp = locationZeroPageX();
+        auto zp = (locationZeroPage() + XRegister) % 0x100;
         return read16From(zp);
     }
 
@@ -287,10 +279,10 @@ class CPU {
             case ROtateRight_ZX :
             case SToreAcc_ZX :
             case SToreY_ZX :
-                return locationZeroPageX();
+                return (locationZeroPage() + XRegister) % 0x100;
             case LoaDX_ZY :
             case SToreX_ZY :
-                return locationZeroPageY();
+                return (locationZeroPage() + YRegister) % 0x100;
             case ADdwithCarry_Ab :
             case AND_Ab :
             case ArithmeticShiftLeft_Ab :
@@ -362,8 +354,7 @@ class CPU {
             case LoaDX_I :
             case LoaDY_I :
             case ORwithAcc_I :
-                    return readImmediate();
-                break;
+                return readImmediate();
             default:
                 return memory[locationByOperation(code)];
         }
