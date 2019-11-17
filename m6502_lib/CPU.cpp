@@ -266,6 +266,20 @@ class CPU {
         memory[location]=setTo;
     }
 
+    void incToMem(uint16_t location) {
+        auto val = memory[location];
+        val=val+1;
+        setFlagsBasedOnValue(val);
+        memory[location]=val;
+    }
+
+    void decToMem(uint16_t location) {
+        auto val = memory[location];
+        val=val-1;
+        setFlagsBasedOnValue(val);
+        memory[location]=val;
+    }
+
 public:
     CPU(uint16_t programCounter, std::array<uint8_t, SIZE> memory, std::function<void ()> cycle) {
         this->cycleCallback = cycle;
@@ -538,7 +552,18 @@ public:
                 case INcrementY :
                     setYRegister(YRegister + 1);
                     break;
-
+                case INCrement_Z :
+                    incToMem(locationZeroPage());
+                    break;
+                case INCrement_ZX :
+                    incToMem(locationZeroPageX());
+                    break;
+                case INCrement_Ab :
+                    incToMem(locationAbsolute());
+                    break;
+                case INCrement_AbX :
+                    incToMem(locationAbsoluteX());
+                    break;
                     //DE : DEcremement
                 case DEcrementX :
                     setXRegister(XRegister - 1);
@@ -546,7 +571,18 @@ public:
                 case DEcrementY :
                     setYRegister(YRegister - 1);
                     break;
-
+                case DECrement_Z :
+                    decToMem(locationZeroPage());
+                    break;
+                case DECrement_ZX :
+                    decToMem(locationZeroPageX());
+                    break;
+                case DECrement_Ab :
+                    decToMem(locationAbsolute());
+                    break;
+                case DECrement_AbX :
+                    decToMem(locationAbsoluteX());
+                    break;
                     // LDA : LoaD Accumulator
                 case LoaDAcc_I :
                     setARegister(readImmediate());
