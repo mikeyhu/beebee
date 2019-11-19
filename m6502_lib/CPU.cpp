@@ -345,19 +345,23 @@ class CPU {
             case SToreAcc_AbY :
             case SuBtractwithCarry_AbY :
                 return locationAbsoluteY();
+            case ADdwithCarry_IndexIndir :
             case AND_IndexIndir :
             case CoMPareacc_IndexIndir :
             case ExclusiveOR_IndexIndir :
             case LoaDAcc_IndexIndir :
             case ORwithAcc_IndexIndir :
             case SToreAcc_IndexIndir :
+            case SuBtractwithCarry_IndexIndir :
                 return locationIndexIndir();
+            case ADdwithCarry_IndirIndex :
             case AND_IndirIndex :
             case CoMPareacc_IndirIndex :
             case ExclusiveOR_IndirIndex :
             case LoaDAcc_IndirIndex :
             case ORwithAcc_IndirIndex :
             case SToreAcc_IndirIndex :
+            case SuBtractwithCarry_IndirIndex :
                 return locationIndirIndex();
             default :
                 std::cout << "unknown opcode location" << std::endl;
@@ -441,6 +445,8 @@ public:
                 case ADdwithCarry_Ab :
                 case ADdwithCarry_AbX :
                 case ADdwithCarry_AbY :
+                case ADdwithCarry_IndexIndir :
+                case ADdwithCarry_IndirIndex :
                     addToARegister(readByOperation(opCode));
                     break;
 
@@ -451,6 +457,8 @@ public:
                 case SuBtractwithCarry_Ab :
                 case SuBtractwithCarry_AbX :
                 case SuBtractwithCarry_AbY :
+                case SuBtractwithCarry_IndexIndir :
+                case SuBtractwithCarry_IndirIndex :
                     subToARegister(readByOperation(opCode));
                     break;
                     // AND : bitwise AND with accumulator
