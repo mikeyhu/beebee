@@ -152,9 +152,21 @@ class CPU {
         if (sum > 0xff) {
             carryFlag = 1;
         }
+        overflowFlag = false;
+        std::cout << "ADC reg:" << std::hex << (int)ARegister << " val:" << (int)b << " sum:" << (int)sum << std::endl;
         ARegister = sum;
         zeroFlag = ARegister == 0;
         negativeFlag = ARegister >> 7 != 0;
+    }
+
+    void subToARegister(uint8_t b) {
+        uint8_t sum = ARegister - b - !isCarryFlag();
+        setFlagsBasedOnValue(sum);
+        setOverflowFlag(false);
+//        if(ARegister < b + !isCarryFlag()) {
+//        }
+        std::cout << "SBC reg:" << std::hex << (int)ARegister << " val:" << (int)b << " res:" << (int)sum << std::endl;
+        ARegister = sum;
     }
 
     void bitToARegister(uint8_t mem) {
@@ -263,6 +275,7 @@ class CPU {
             case SToreAcc_Z :
             case SToreX_Z :
             case SToreY_Z :
+            case SuBtractwithCarry_Z :
                 return locationZeroPage();
             case ADdwithCarry_ZX :
             case AND_ZX :
@@ -279,6 +292,7 @@ class CPU {
             case ROtateRight_ZX :
             case SToreAcc_ZX :
             case SToreY_ZX :
+            case SuBtractwithCarry_ZX :
                 return (locationZeroPage() + XRegister) % 0x100;
             case LoaDX_ZY :
             case SToreX_ZY :
@@ -303,6 +317,7 @@ class CPU {
             case SToreAcc_Ab :
             case SToreX_Ab :
             case SToreY_Ab :
+            case SuBtractwithCarry_Ab :
                 return locationAbsolute();
             case ADdwithCarry_AbX :
             case AND_AbX :
@@ -318,6 +333,7 @@ class CPU {
             case ROtateLeft_AbX :
             case ROtateRight_AbX :
             case SToreAcc_AbX :
+            case SuBtractwithCarry_AbX :
                 return locationAbsoluteX();
             case ADdwithCarry_AbY :
             case AND_AbY :
@@ -327,6 +343,7 @@ class CPU {
             case LoaDX_AbY :
             case ORwithAcc_AbY :
             case SToreAcc_AbY :
+            case SuBtractwithCarry_AbY :
                 return locationAbsoluteY();
             case AND_IndexIndir :
             case CoMPareacc_IndexIndir :
@@ -360,6 +377,7 @@ class CPU {
             case LoaDX_I :
             case LoaDY_I :
             case ORwithAcc_I :
+            case SuBtractwithCarry_I :
                 return readImmediate();
             default:
                 return memory[locationByOperation(code)];
@@ -426,6 +444,15 @@ public:
                     addToARegister(readByOperation(opCode));
                     break;
 
+                    // SuBtractwithCarry
+                case SuBtractwithCarry_I :
+                case SuBtractwithCarry_Z :
+                case SuBtractwithCarry_ZX :
+                case SuBtractwithCarry_Ab :
+                case SuBtractwithCarry_AbX :
+                case SuBtractwithCarry_AbY :
+                    subToARegister(readByOperation(opCode));
+                    break;
                     // AND : bitwise AND with accumulator
                 case AND_I :
                 case AND_Z :
@@ -686,7 +713,8 @@ public:
 #ifndef NDEBUG
             if (previousProgramCounter == programCounter) {
                 std::cout << "Trap found!" << std::endl;
-                if(programCounter!=0x37ce) {
+                if(programCounter!=0x37ce
+                && programCounter!=0x35c9) {
                     return;
                 } else {
                     programCounter=programCounter+2;
@@ -736,16 +764,16 @@ public:
         return decimalFlag;
     }
 
-    void setDecimalFlag(bool decimalFlag) {
-        CPU::decimalFlag = decimalFlag;
+    void setDecimalFlag(bool flag) {
+        CPU::decimalFlag = flag;
     }
 
     bool isZeroFlag() const {
         return zeroFlag;
     }
 
-    void setZeroFlag(bool zeroFlag) {
-        CPU::zeroFlag = zeroFlag;
+    void setZeroFlag(bool flag) {
+        CPU::zeroFlag = flag;
     }
 
     bool isCarryFlag() const {

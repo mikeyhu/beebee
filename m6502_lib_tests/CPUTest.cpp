@@ -36,6 +36,14 @@ TEST(CPUGeneral, ADC_I_carry) {
     EXPECT_TRUE(cpu.isCarryFlag());
 }
 
+TEST(CPUGeneral, ADC_I_carry) {
+    std::array<uint8_t, 5> mem = {LoaDAcc_I, 0xc0, ADdwithCarry_I, 0xc4, BReaK};
+    auto cpu = CPU(0, mem, cycleCallback);
+    cpu.run();
+    EXPECT_EQ(0x84, cpu.getARegister());
+    EXPECT_TRUE(cpu.isCarryFlag());
+}
+
 TEST(CPUGeneral, ADdwithCarry_Z) {
     std::array<uint8_t, 6> mem = {LoaDAcc_I, 0x10, ADdwithCarry_Z, 0x05, BReaK, 0x0f};
     auto cpu = CPU(0, mem, cycleCallback);
@@ -549,4 +557,51 @@ TEST(CPUGeneral, TransferYtoA) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x02, cpu.getARegister());
+}
+
+TEST(CPUGeneral, SuBtractwithCarry_Z_simple) {
+    std::array<uint8_t, 6> mem = {LoaDAcc_I, 0x05, SuBtractwithCarry_Z, 0x05, BReaK, 0x03};
+    auto cpu = CPU(0, mem, cycleCallback);
+    cpu.run();
+    EXPECT_EQ(0x01, cpu.getARegister()); //carry flag is off
+    EXPECT_FALSE(cpu.isCarryFlag());
+    EXPECT_FALSE(cpu.isNegativeFlag());
+    EXPECT_FALSE(cpu.isZeroFlag());
+    EXPECT_FALSE(cpu.isOverflowFlag());
+}
+
+TEST(CPUGeneral, SuBtractwithCarry_Z_zero) {
+    std::array<uint8_t, 6> mem = {LoaDAcc_I, 0x04, SuBtractwithCarry_Z, 0x05, BReaK, 0x04};
+    auto cpu = CPU(0, mem, cycleCallback);
+    cpu.setCarryFlag(true);
+    cpu.run();
+    EXPECT_EQ(0x0, cpu.getARegister());
+    EXPECT_TRUE(cpu.isCarryFlag());
+    EXPECT_FALSE(cpu.isNegativeFlag());
+    EXPECT_TRUE(cpu.isZeroFlag());
+    EXPECT_FALSE(cpu.isOverflowFlag());
+}
+
+TEST(CPUGeneral, SuBtractwithCarry_Z_negative) {
+    std::array<uint8_t, 6> mem = {LoaDAcc_I, 0x0, SuBtractwithCarry_Z, 0x05, BReaK, 0xff};
+    auto cpu = CPU(0, mem, cycleCallback);
+    cpu.setCarryFlag(true);
+    cpu.run();
+    EXPECT_EQ(0x1, cpu.getARegister());
+    EXPECT_TRUE(cpu.isCarryFlag());
+    EXPECT_TRUE(cpu.isNegativeFlag());
+    EXPECT_FALSE(cpu.isZeroFlag());
+    EXPECT_FALSE(cpu.isOverflowFlag());
+}
+
+TEST(CPUGeneral, SuBtractwithCarry_Z) {
+    std::array<uint8_t, 6> mem = {LoaDAcc_I, 0x0, SuBtractwithCarry_Z, 0x05, BReaK, 0xff};
+    auto cpu = CPU(0, mem, cycleCallback);
+    cpu.setCarryFlag(true);
+    cpu.run();
+    EXPECT_EQ(0x1, cpu.getARegister());
+    EXPECT_TRUE(cpu.isCarryFlag());
+    EXPECT_TRUE(cpu.isNegativeFlag());
+    EXPECT_FALSE(cpu.isZeroFlag());
+    EXPECT_FALSE(cpu.isOverflowFlag());
 }
