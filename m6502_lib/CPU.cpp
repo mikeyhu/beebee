@@ -41,7 +41,7 @@ class CPU {
     }
 
     OpCode readOpCode() {
-        OpCode opCode = (OpCode) readUInt8();
+        auto opCode = (OpCode) readUInt8();
         return opCode;
     }
 
@@ -115,7 +115,9 @@ class CPU {
     }
 
     void compareRegisterTo(uint8_t reg, uint8_t value) {
+#ifndef NDEBUG
         std::cout << "CMP reg:" << std::hex << (int) reg << " val:" << (int) value << std::endl;
+#endif
         zeroFlag = value == reg;
         carryFlag = reg >= value;
         negativeFlag = reg < value;
@@ -153,7 +155,9 @@ class CPU {
             carryFlag = 1;
         }
         overflowFlag = false;
+#ifndef NDEBUG
         std::cout << "ADC reg:" << std::hex << (int)ARegister << " val:" << (int)b << " sum:" << (int)sum << std::endl;
+#endif
         ARegister = sum;
         zeroFlag = ARegister == 0;
         negativeFlag = ARegister >> 7 != 0;
@@ -163,14 +167,14 @@ class CPU {
         uint8_t sum = ARegister - b - !isCarryFlag();
         setFlagsBasedOnValue(sum);
         setOverflowFlag(false);
-//        if(ARegister < b + !isCarryFlag()) {
-//        }
         std::cout << "SBC reg:" << std::hex << (int)ARegister << " val:" << (int)b << " res:" << (int)sum << std::endl;
         ARegister = sum;
     }
 
     void bitToARegister(uint8_t mem) {
+#ifndef NDEBUG
         std::cout << std::hex << "BIT A:" << (int)ARegister << " ZP:" << (int)mem << std::endl;
+#endif
         auto bit = ARegister & mem;
         setZeroFlag(bit ==0);
         setNegativeFlag((mem & 0x80) << 7);
@@ -364,7 +368,9 @@ class CPU {
             case SuBtractwithCarry_IndirIndex :
                 return locationIndirIndex();
             default :
+#ifndef NDEBUG
                 std::cout << "unknown opcode location" << std::endl;
+#endif
                 break;
         }
     }
@@ -499,7 +505,7 @@ public:
                 case BIT_Ab :
                     bitToARegister(readByOperation(opCode));
                     break;
-                case ArithmeticShiftLeft_Ac :
+                case ArithmeticShiftLeft_Acc :
                     aslToARegister(ARegister);
                     break;
                 case ArithmeticShiftLeft_Z :
@@ -718,7 +724,6 @@ public:
 #endif
                     return;
             }
-#ifndef NDEBUG
             if (previousProgramCounter == programCounter) {
                 std::cout << "Trap found!" << std::endl;
                 if(programCounter!=0x37ce
@@ -728,6 +733,7 @@ public:
                     programCounter=programCounter+2;
                 }
             }
+#ifndef NDEBUG
             printState(opCode);
 #endif
             previousProgramCounter = programCounter;
@@ -846,7 +852,7 @@ public:
 
     std::string OpCodeToString(OpCode value) {
         switch (value) {
-#define ITEM(name, code) case code: return #name;
+#define OPCODE(name, code, mode) case code: return #name;
 
 #include "OpCodeMacro.cpp"
         }

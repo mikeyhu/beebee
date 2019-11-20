@@ -1,5 +1,5 @@
 enum OpCode {
-#define ITEM(name, code) name=code,
+#define OPCODE(name, code, mode) name=code,
 
 #include "OpCodeMacro.cpp"
 };

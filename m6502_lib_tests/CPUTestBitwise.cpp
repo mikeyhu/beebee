@@ -156,8 +156,8 @@ TEST(CPUBitwise, BIT_Ab) {
     EXPECT_TRUE(cpu.isOverflowFlag());
 }
 
-TEST(CPUBitwise, ArithmeticShiftLeft_Ac) {
-    std::array<uint8_t, 16> mem = {LoaDAcc_I, 0x01, ArithmeticShiftLeft_Ac, BReaK};
+TEST(CPUBitwise, ArithmeticShiftLeft_Acc) {
+    std::array<uint8_t, 16> mem = {LoaDAcc_I, 0x01, ArithmeticShiftLeft_Acc, BReaK};
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x02, cpu.getARegister());
