@@ -45,6 +45,10 @@ class CPU {
         return opCode;
     }
 
+    uint8_t locationImmediate() {
+        return programCounter++;
+    }
+
     uint8_t readImmediate() {
         return readUInt8();
     }
@@ -255,6 +259,18 @@ class CPU {
 
     uint16_t locationByOperation(OpCode code) {
         switch (code) {
+            case ADdwithCarry_I :
+            case AND_I :
+            case CoMPareacc_I :
+            case ComPareX_I :
+            case ComPareY_I :
+            case ExclusiveOR_I :
+            case LoaDAcc_I :
+            case LoaDX_I :
+            case LoaDY_I :
+            case ORwithAcc_I :
+            case SuBtractwithCarry_I :
+                return locationImmediate();
             case ADdwithCarry_Z :
             case AND_Z :
             case ArithmeticShiftLeft_Z :
@@ -370,22 +386,7 @@ class CPU {
     }
 
     uint8_t readByOperation(OpCode code) {
-        switch(code) {
-            case ADdwithCarry_I :
-            case AND_I :
-            case CoMPareacc_I :
-            case ComPareX_I :
-            case ComPareY_I :
-            case ExclusiveOR_I :
-            case LoaDAcc_I :
-            case LoaDX_I :
-            case LoaDY_I :
-            case ORwithAcc_I :
-            case SuBtractwithCarry_I :
-                return readImmediate();
-            default:
-                return memory[locationByOperation(code)];
-        }
+        return memory[locationByOperation(code)];
     }
 
 public:
