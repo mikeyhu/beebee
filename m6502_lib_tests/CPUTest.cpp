@@ -36,14 +36,6 @@ TEST(CPUGeneral, ADC_I_carry) {
     EXPECT_TRUE(cpu.isCarryFlag());
 }
 
-TEST(CPUGeneral, ADC_I_carry) {
-    std::array<uint8_t, 5> mem = {LoaDAcc_I, 0xc0, ADdwithCarry_I, 0xc4, BReaK};
-    auto cpu = CPU(0, mem, cycleCallback);
-    cpu.run();
-    EXPECT_EQ(0x84, cpu.getARegister());
-    EXPECT_TRUE(cpu.isCarryFlag());
-}
-
 TEST(CPUGeneral, ADdwithCarry_Z) {
     std::array<uint8_t, 6> mem = {LoaDAcc_I, 0x10, ADdwithCarry_Z, 0x05, BReaK, 0x0f};
     auto cpu = CPU(0, mem, cycleCallback);

@@ -407,7 +407,7 @@ public:
                         pushStack8(flagsAsInt());
                         programCounter = read16From(breakLocation);
                     }
-                    printState();
+                    printState(opCode);
                     return;
                 }
                 case CLearCarry :
@@ -714,7 +714,7 @@ public:
                 default:
                     std::cout << "Unknown OpCode:" << std::hex << (int) memory[programCounter - 1] << std::endl;
 #ifndef NDEBUG
-                    printState();
+                    printState(opCode);
 #endif
                     return;
             }
@@ -728,7 +728,7 @@ public:
                     programCounter=programCounter+2;
                 }
             }
-            printState();
+            printState(opCode);
 #endif
             previousProgramCounter = programCounter;
             cycleCallback();
@@ -844,8 +844,18 @@ public:
         return memory;
     }
 
-    void printState() {
+    std::string OpCodeToString(OpCode value) {
+        switch (value) {
+#define ITEM(name, code) case code: return #name;
+
+#include "OpCodeMacro.cpp"
+        }
+        return "";
+    }
+
+    void printState(OpCode opCode) {
         std::cout << "PC:" << std::hex << (int) programCounter
+                  << " OC:" << OpCodeToString(opCode)
                   << " SP:" << (int) stackPointer
                   << " A:" << (int) ARegister
                   << " X:" << (int) XRegister
