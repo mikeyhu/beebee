@@ -2,7 +2,28 @@
 #include <cstring>
 #include <array>
 #include <iostream>
+#include <map>
+
+#ifndef CLASS_OPCODE
+#define CLASS_OPCODE
 #include "OpCode.cpp"
+#endif
+
+#include "OpLog.cpp"
+
+
+enum OpMode {
+    Z,
+    ZX,
+    ZY,
+    Ab,
+    AbX,
+    AbY,
+    I,
+    IndirIndex,
+    IndexIndir,
+    IMP
+};
 
 template<std::size_t SIZE>
 
@@ -404,7 +425,9 @@ public:
 
     void run() {
         for (;;) {
+            previousProgramCounter = programCounter;
             auto opCode = readOpCode();
+            auto opLog = OpLog(opCode, previousProgramCounter);
             switch (opCode) {
                 case BReaK : {
                     if (breakLocation > 0x00) {
@@ -413,7 +436,7 @@ public:
                         pushStack8(flagsAsInt());
                         programCounter = read16From(breakLocation);
                     }
-                    printState(opCode);
+                    printState(opLog);
                     return;
                 }
                 case CLearCarry :
@@ -720,7 +743,7 @@ public:
                 default:
                     std::cout << "Unknown OpCode:" << std::hex << (int) memory[programCounter - 1] << std::endl;
 #ifndef NDEBUG
-                    printState(opCode);
+                    printState(opLog);
 #endif
                     return;
             }
@@ -734,9 +757,8 @@ public:
                 }
             }
 #ifndef NDEBUG
-            printState(opCode);
+            printState(opLog);
 #endif
-            previousProgramCounter = programCounter;
             cycleCallback();
         }
     }
@@ -850,18 +872,8 @@ public:
         return memory;
     }
 
-    std::string OpCodeToString(OpCode value) {
-        switch (value) {
-#define OPCODE(name, code, mode) case code: return #name;
-
-#include "OpCodeMacro.cpp"
-        }
-        return "";
-    }
-
-    void printState(OpCode opCode) {
-        std::cout << "PC:" << std::hex << (int) programCounter
-                  << " OC:" << OpCodeToString(opCode)
+    void printState(OpLog opLog) {
+        std::cout << opLog.ToString()
                   << " SP:" << (int) stackPointer
                   << " A:" << (int) ARegister
                   << " X:" << (int) XRegister
