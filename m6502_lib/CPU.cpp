@@ -35,8 +35,6 @@ class CPU {
     uint16_t breakLocation = 0;
     bool doBreak = false;
 
-    std::map<uint8_t, std::function<void(CPU&)>> opLookup = std::map<uint8_t, std::function<void(CPU&)>>();
-
     uint16_t toUInt16(uint8_t a, uint8_t b) {
         return b << 8u | a;
     }
@@ -56,41 +54,10 @@ class CPU {
         return opCode;
     }
 
-    uint8_t readImmediate() {
-        return readUInt8();
-    }
-
-    uint8_t locationZeroPage() {
-        return readUInt8();
-    }
-
-    uint16_t locationAbsolute() {
-        return readUInt16();
-    }
-
-    uint16_t locationAbsoluteX() {
-        return locationAbsolute() + XRegister;
-    }
-
-    uint16_t locationAbsoluteY() {
-        return locationAbsolute() + YRegister;
-    }
-
     uint16_t read16From(uint16_t location) {
         uint8_t upper = memory[location];
         uint8_t lower = memory[location+1];
         return toUInt16(upper, lower);
-    }
-
-    uint16_t locationIndirIndex() {
-        auto zp = readUInt8();
-        auto loc = read16From(zp);
-        return loc + YRegister;
-    }
-
-    uint16_t locationIndexIndir() {
-        auto zp = (locationZeroPage() + XRegister) % 0x100;
-        return read16From(zp);
     }
 
     void pushStack8(uint8_t value) {
@@ -115,7 +82,7 @@ class CPU {
     }
 
     void branchIfTrue(bool check) {
-        uint8_t location = readImmediate(); //always read immediate to move counter anyway
+        uint8_t location = I(); //always read immediate to move counter anyway
         if (check) {
             if (location >= 0x80) {
                 programCounter = programCounter - 0x100 + location;
@@ -160,29 +127,86 @@ class CPU {
         negativeFlag = value >> 7 != 0;
     }
 
-    void addToARegister(uint8_t b) {
-        int sum = ARegister + b;
+    // Memory Modes
+    bool ACC() {
+        return true;
+    }
+    uint8_t I() {
+        return readUInt8();
+    }
+    uint16_t Z() {
+        return readUInt8();
+    }
+    uint16_t ZX() {
+        return (Z() + XRegister) % 0x100;
+    }
+    uint16_t ZY() {
+        return (Z() + YRegister) % 0x100;
+    }
+    uint16_t Ab() {
+        return readUInt16();
+    }
+    uint16_t AbX() {
+        return Ab() + XRegister;
+    }
+    uint16_t AbY() {
+        return Ab() + YRegister;
+    }
+    uint16_t IMP() {
+        return 0;
+    }
+    uint16_t INDIR() {
+        return read16From(Ab());
+    }
+    uint16_t IndexIndir() {
+        auto zp = (Z() + XRegister) % 0x100;
+        return read16From(zp);
+    }
+    uint16_t IndirIndex() {
+        auto zp = readUInt8();
+        auto loc = read16From(zp);
+        return loc + YRegister;
+    }
+
+    // Operations
+    void opAddWithCarry(uint8_t value) {
+        int sum = ARegister + value;
         if (sum > 0xff) {
             carryFlag = 1;
         }
         overflowFlag = false;
 #ifndef NDEBUG
-        std::cout << "ADC reg:" << std::hex << (int)ARegister << " val:" << (int)b << " sum:" << (int)sum << std::endl;
+        std::cout << "ADC reg:" << std::hex << (int)ARegister << " val:" << (int)value << " sum:" << (int)sum << std::endl;
 #endif
         ARegister = sum;
         zeroFlag = ARegister == 0;
         negativeFlag = ARegister >> 7 != 0;
     }
-
-    void subToARegister(uint8_t b) {
-        uint8_t sum = ARegister - b - !isCarryFlag();
-        setFlagsBasedOnValue(sum);
-        setOverflowFlag(false);
-        std::cout << "SBC reg:" << std::hex << (int)ARegister << " val:" << (int)b << " res:" << (int)sum << std::endl;
-        ARegister = sum;
+    void opAddWithCarry(uint16_t location) {
+        opAddWithCarry(memory[location]);
     }
 
-    void bitToARegister(uint8_t mem) {
+    void opArithmeticShiftLeft(bool _) {
+        auto setTo = ARegister << 1u;
+        setCarryFlag(setTo>0xff);
+        setARegister(setTo);
+    }
+    void opArithmeticShiftLeft(uint16_t location) {
+        auto mem = memory[location];
+        auto setTo = mem << 1u;
+        setCarryFlag(setTo>0xff);
+        setFlagsBasedOnValue(setTo);
+        memory[location]=setTo;
+    }
+
+    void opAnd(uint8_t value) {
+        setARegister(ARegister & value);
+    }
+    void opAnd(uint16_t location) {
+        opAnd(memory[location]);
+    }
+    void opBit(uint16_t location) {
+        auto mem = memory[location];
 #ifndef NDEBUG
         std::cout << std::hex << "BIT A:" << (int)ARegister << " ZP:" << (int)mem << std::endl;
 #endif
@@ -190,145 +214,6 @@ class CPU {
         setZeroFlag(bit ==0);
         setNegativeFlag((mem & 0x80) << 7);
         setOverflowFlag( (mem & 0x40) << 6);
-    }
-
-    void eorToARegister(uint8_t mem) {
-        setARegister(ARegister ^ mem);
-    }
-
-    void andToARegister(uint8_t mem) {
-        setARegister(ARegister & mem);
-    }
-
-    void orToARegister(uint8_t mem) {
-        setARegister(ARegister | mem);
-    }
-
-    void rorToARegister(uint8_t mem) {
-        auto setTo = mem >> 1u | (carryFlag << 7u);
-        setCarryFlag(mem & 0x1u);
-        setARegister(setTo);
-    }
-
-    void aslToARegister(uint8_t mem) {
-        auto setTo = mem << 1u;
-        setCarryFlag(setTo>0xff);
-        setARegister(setTo);
-    }
-
-    void aslToMem(uint16_t location) {
-        auto mem = memory[location];
-        auto setTo = mem << 1u;
-        setCarryFlag(setTo>0xff);
-        setFlagsBasedOnValue(setTo);
-        memory[location]=setTo;
-    }
-
-    void lsrToARegister(uint8_t mem) {
-       auto setTo = mem >> 1u;
-       setCarryFlag(mem & 1u);
-       setARegister(setTo);
-    }
-
-    void lsrToMem(uint16_t location) {
-        auto mem = memory[location];
-        auto setTo = mem >> 1u;
-        setCarryFlag(mem & 1u);
-        setFlagsBasedOnValue(setTo);
-        memory[location]=setTo;
-    }
-
-    void rolToMem(uint16_t location) {
-        auto mem = memory[location];
-        auto setTo = mem << 1u | carryFlag;
-        setCarryFlag(mem & 0x80u);
-        setFlagsBasedOnValue(setTo);
-        memory[location]=setTo;
-    }
-
-    void rorToMem(uint16_t location) {
-        auto mem = memory[location];
-        auto setTo = mem >> 1u | (carryFlag << 7u);
-        setCarryFlag(mem & 0x1u);
-        setFlagsBasedOnValue(setTo);
-        memory[location]=setTo;
-    }
-
-    void incToMem(uint16_t location) {
-        auto val = memory[location];
-        val=val+1;
-        setFlagsBasedOnValue(val);
-        memory[location]=val;
-    }
-
-    void decToMem(uint16_t location) {
-        auto val = memory[location];
-        val=val-1;
-        setFlagsBasedOnValue(val);
-        memory[location]=val;
-    }
-
-    // Memory Modes
-    bool ACC() {
-        return true;
-    }
-    uint8_t I() {
-        return readImmediate();
-    }
-    uint16_t Z() {
-        return locationZeroPage();
-    }
-    uint16_t ZX() {
-        return (locationZeroPage() + XRegister) % 0x100;
-    }
-    uint16_t ZY() {
-        return (locationZeroPage() + YRegister) % 0x100;
-    }
-    uint16_t Ab() {
-        return locationAbsolute();
-    }
-    uint16_t AbX() {
-        return locationAbsoluteX();
-    }
-    uint16_t AbY() {
-        return locationAbsoluteY();
-    }
-    uint16_t IMP() {
-        return 0;
-    }
-    uint16_t INDIR() {
-        return read16From(locationAbsolute());
-    }
-    uint16_t IndexIndir() {
-        return locationIndexIndir();
-    }
-    uint16_t IndirIndex() {
-        return locationIndirIndex();
-    }
-
-    // Operations
-    void opAddWithCarry(uint8_t value) {
-        addToARegister(value);
-    }
-    void opAddWithCarry(uint16_t location) {
-        addToARegister(memory[location]);
-    }
-
-    void opArithmeticShiftLeft(bool _) {
-        aslToARegister(ARegister);
-    }
-    void opArithmeticShiftLeft(uint16_t location) {
-        aslToMem(location);
-    }
-
-    void opAnd(uint8_t value) {
-        andToARegister(value);
-    }
-    void opAnd(uint16_t location) {
-        andToARegister(memory[location]);
-    }
-    void opBit(uint16_t location) {
-        bitToARegister(memory[location]);
     }
 
     void opBranchonCarryClear(uint16_t _) {
@@ -399,7 +284,10 @@ class CPU {
         compareRegisterTo(YRegister, memory[location]);
     }
     void opDecrement(uint16_t location) {
-        decToMem(location);
+        auto val = memory[location];
+        val=val-1;
+        setFlagsBasedOnValue(val);
+        memory[location]=val;
     }
     void opDecrementX(uint16_t _) {
         setXRegister(XRegister-1);
@@ -408,13 +296,16 @@ class CPU {
         setYRegister(YRegister-1);
     }
     void opExclusiveOR(uint8_t value) {
-        eorToARegister(value);
+        setARegister(ARegister ^ value);
     }
     void opExclusiveOR(uint16_t location) {
-        eorToARegister(memory[location]);
+        opExclusiveOR(memory[location]);
     }
     void opIncrement(uint16_t location) {
-        incToMem(location);
+        auto val = memory[location];
+        val=val+1;
+        setFlagsBasedOnValue(val);
+        memory[location]=val;
     }
     void opIncrementX(uint16_t _) {
         setXRegister(XRegister + 1);
@@ -430,10 +321,10 @@ class CPU {
         programCounter = location;
     }
     void opORwithAcc(uint8_t value) {
-        orToARegister(value);
+        setARegister(ARegister | value);
     }
     void opORwithAcc(uint16_t location) {
-        orToARegister(memory[location]);
+        opORwithAcc(memory[location]);
     }
     void opLoadAcc(uint16_t location) {
         setARegister(memory[location]);
@@ -457,10 +348,16 @@ class CPU {
 
     }
     void opLogicalShiftRight(bool _) {
-        lsrToARegister(ARegister);
+        auto setTo = ARegister >> 1u;
+        setCarryFlag(ARegister & 1u);
+        setARegister(setTo);
     }
     void opLogicalShiftRight(uint16_t location) {
-        lsrToMem(location);
+        auto mem = memory[location];
+        auto setTo = mem >> 1u;
+        setCarryFlag(mem & 1u);
+        setFlagsBasedOnValue(setTo);
+        memory[location]=setTo;
     }
     void opPushProcessorStatus(uint16_t _) {
         pushStack8(flagsAsInt());
@@ -489,13 +386,23 @@ class CPU {
         setARegister(setTo);
     }
     void opRotateLeft(uint16_t location) {
-        rolToMem(location);
+        auto mem = memory[location];
+        auto setTo = mem << 1u | carryFlag;
+        setCarryFlag(mem & 0x80u);
+        setFlagsBasedOnValue(setTo);
+        memory[location]=setTo;
     }
     void opRotateRight(bool _) {
-        rorToARegister(ARegister);
+        auto setTo = ARegister >> 1u | (carryFlag << 7u);
+        setCarryFlag(ARegister & 0x1u);
+        setARegister(setTo);
     }
     void opRotateRight(uint16_t location) {
-        rorToMem(location);
+        auto mem = memory[location];
+        auto setTo = mem >> 1u | (carryFlag << 7u);
+        setCarryFlag(mem & 0x1u);
+        setFlagsBasedOnValue(setTo);
+        memory[location]=setTo;
     }
     void opSetCarry(uint16_t _) {
         carryFlag=true;
@@ -507,7 +414,12 @@ class CPU {
         interruptDisableFlag=true;
     }
     void opSubtractWithCarry(uint16_t location) {
-        subToARegister(memory[location]);
+        auto mem=memory[location];
+        uint8_t sum = ARegister - mem - !isCarryFlag();
+        setFlagsBasedOnValue(sum);
+        setOverflowFlag(false);
+        std::cout << "SBC reg:" << std::hex << (int)ARegister << " val:" << (int)mem << " res:" << (int)sum << std::endl;
+        ARegister = sum;
     }
     void opStoreAcc(uint16_t location) {
         memory[location] = ARegister;
