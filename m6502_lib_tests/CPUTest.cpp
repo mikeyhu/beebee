@@ -10,12 +10,12 @@ class CPUGeneral : public ::testing::Test {
 };
 
 TEST(CPUGeneral, FoundBRK) {
-    std::array<uint8_t, 0xffff> mem = {LoaDAcc_I, 0x0, SToreAcc_Z, 0x09, LoaDAcc_I, 0x01, SToreAcc_Z, 0x0a, BReaK, 0x00, 0x00};
+    std::array<uint8_t, 0xffff> mem = {BReaK, 0x01, 0x02};
     auto cpu = CPU(0, mem, cycleCallback);
-    cpu.setBreakLocation(0x09);
+    cpu.setBreakLocation(0x01);
     cpu.run();
     EXPECT_TRUE(cpu.isBreakCommandFlag());
-    EXPECT_EQ(0x100, cpu.getProgramCounter());
+    EXPECT_EQ(0x201, cpu.getProgramCounter());
 }
 
 // ADC : ADd with Carry

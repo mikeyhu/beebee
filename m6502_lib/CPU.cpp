@@ -2,6 +2,7 @@
 #include <cstring>
 #include <array>
 #include <iostream>
+#include <functional>
 #include <map>
 
 #ifndef CLASS_OPCODE
@@ -10,20 +11,6 @@
 #endif
 
 #include "OpLog.cpp"
-
-
-enum OpMode {
-    Z,
-    ZX,
-    ZY,
-    Ab,
-    AbX,
-    AbY,
-    I,
-    IndirIndex,
-    IndexIndir,
-    IMP
-};
 
 template<std::size_t SIZE>
 
@@ -46,6 +33,9 @@ class CPU {
     std::function<void ()> cycleCallback;
     std::array<uint8_t, SIZE> memory;
     uint16_t breakLocation = 0;
+    bool doBreak = false;
+
+    std::map<uint8_t, std::function<void(CPU&)>> opLookup = std::map<uint8_t, std::function<void(CPU&)>>();
 
     uint16_t toUInt16(uint8_t a, uint8_t b) {
         return b << 8u | a;
@@ -278,141 +268,273 @@ class CPU {
         memory[location]=val;
     }
 
-    uint16_t locationByOperation(OpCode code) {
-        switch (code) {
-            case ADdwithCarry_Z :
-            case AND_Z :
-            case ArithmeticShiftLeft_Z :
-            case BIT_Z :
-            case CoMPareacc_Z :
-            case ComPareX_Z :
-            case ComPareY_Z :
-            case DECrement_Z :
-            case ExclusiveOR_Z :
-            case INCrement_Z :
-            case LoaDAcc_Z :
-            case LoaDX_Z :
-            case LoaDY_Z :
-            case LogicalShiftRight_Z :
-            case ORwithAcc_Z :
-            case ROtateLeft_Z :
-            case ROtateRight_Z :
-            case SToreAcc_Z :
-            case SToreX_Z :
-            case SToreY_Z :
-            case SuBtractwithCarry_Z :
-                return locationZeroPage();
-            case ADdwithCarry_ZX :
-            case AND_ZX :
-            case ArithmeticShiftLeft_ZX :
-            case CoMPareacc_ZX :
-            case DECrement_ZX :
-            case ExclusiveOR_ZX :
-            case INCrement_ZX :
-            case LoaDAcc_ZX :
-            case LoaDY_ZX :
-            case LogicalShiftRight_ZX :
-            case ORwithAcc_ZX :
-            case ROtateLeft_ZX :
-            case ROtateRight_ZX :
-            case SToreAcc_ZX :
-            case SToreY_ZX :
-            case SuBtractwithCarry_ZX :
-                return (locationZeroPage() + XRegister) % 0x100;
-            case LoaDX_ZY :
-            case SToreX_ZY :
-                return (locationZeroPage() + YRegister) % 0x100;
-            case ADdwithCarry_Ab :
-            case AND_Ab :
-            case ArithmeticShiftLeft_Ab :
-            case BIT_Ab :
-            case CoMPareacc_Ab :
-            case ComPareX_Ab :
-            case ComPareY_Ab :
-            case DECrement_Ab :
-            case ExclusiveOR_Ab :
-            case INCrement_Ab :
-            case LoaDAcc_Ab :
-            case LoaDX_Ab :
-            case LoaDY_Ab :
-            case LogicalShiftRight_Ab :
-            case ORwithAcc_Ab :
-            case ROtateLeft_Ab :
-            case ROtateRight_Ab :
-            case SToreAcc_Ab :
-            case SToreX_Ab :
-            case SToreY_Ab :
-            case SuBtractwithCarry_Ab :
-                return locationAbsolute();
-            case ADdwithCarry_AbX :
-            case AND_AbX :
-            case ArithmeticShiftLeft_AbX :
-            case CoMPareacc_AbX :
-            case DECrement_AbX :
-            case ExclusiveOR_AbX :
-            case INCrement_AbX :
-            case LoaDAcc_AbX :
-            case LoaDY_AbX :
-            case LogicalShiftRight_AbX :
-            case ORwithAcc_AbX :
-            case ROtateLeft_AbX :
-            case ROtateRight_AbX :
-            case SToreAcc_AbX :
-            case SuBtractwithCarry_AbX :
-                return locationAbsoluteX();
-            case ADdwithCarry_AbY :
-            case AND_AbY :
-            case CoMPareacc_AbY :
-            case ExclusiveOR_AbY :
-            case LoaDAcc_AbY :
-            case LoaDX_AbY :
-            case ORwithAcc_AbY :
-            case SToreAcc_AbY :
-            case SuBtractwithCarry_AbY :
-                return locationAbsoluteY();
-            case ADdwithCarry_IndexIndir :
-            case AND_IndexIndir :
-            case CoMPareacc_IndexIndir :
-            case ExclusiveOR_IndexIndir :
-            case LoaDAcc_IndexIndir :
-            case ORwithAcc_IndexIndir :
-            case SToreAcc_IndexIndir :
-            case SuBtractwithCarry_IndexIndir :
-                return locationIndexIndir();
-            case ADdwithCarry_IndirIndex :
-            case AND_IndirIndex :
-            case CoMPareacc_IndirIndex :
-            case ExclusiveOR_IndirIndex :
-            case LoaDAcc_IndirIndex :
-            case ORwithAcc_IndirIndex :
-            case SToreAcc_IndirIndex :
-            case SuBtractwithCarry_IndirIndex :
-                return locationIndirIndex();
-            default :
-#ifndef NDEBUG
-                std::cout << "unknown opcode location" << std::endl;
-#endif
-                break;
-        }
+    // Memory Modes
+    bool ACC() {
+        return true;
+    }
+    uint8_t I() {
+        return readImmediate();
+    }
+    uint16_t Z() {
+        return locationZeroPage();
+    }
+    uint16_t ZX() {
+        return (locationZeroPage() + XRegister) % 0x100;
+    }
+    uint16_t ZY() {
+        return (locationZeroPage() + YRegister) % 0x100;
+    }
+    uint16_t Ab() {
+        return locationAbsolute();
+    }
+    uint16_t AbX() {
+        return locationAbsoluteX();
+    }
+    uint16_t AbY() {
+        return locationAbsoluteY();
+    }
+    uint16_t IMP() {
+        return 0;
+    }
+    uint16_t INDIR() {
+        return read16From(locationAbsolute());
+    }
+    uint16_t IndexIndir() {
+        return locationIndexIndir();
+    }
+    uint16_t IndirIndex() {
+        return locationIndirIndex();
     }
 
-    uint8_t readByOperation(OpCode code) {
-        switch(code) {
-            case ADdwithCarry_I :
-            case AND_I :
-            case CoMPareacc_I :
-            case ComPareX_I :
-            case ComPareY_I :
-            case ExclusiveOR_I :
-            case LoaDAcc_I :
-            case LoaDX_I :
-            case LoaDY_I :
-            case ORwithAcc_I :
-            case SuBtractwithCarry_I :
-                return readImmediate();
-            default:
-                return memory[locationByOperation(code)];
+    // Operations
+    void opAddWithCarry(uint8_t value) {
+        addToARegister(value);
+    }
+    void opAddWithCarry(uint16_t location) {
+        addToARegister(memory[location]);
+    }
+
+    void opArithmeticShiftLeft(bool _) {
+        aslToARegister(ARegister);
+    }
+    void opArithmeticShiftLeft(uint16_t location) {
+        aslToMem(location);
+    }
+
+    void opAnd(uint8_t value) {
+        andToARegister(value);
+    }
+    void opAnd(uint16_t location) {
+        andToARegister(memory[location]);
+    }
+    void opBit(uint16_t location) {
+        bitToARegister(memory[location]);
+    }
+
+    void opBranchonCarryClear(uint16_t _) {
+        branchIfTrue(!carryFlag);
+    }
+
+    void opBranchonCarrySet(uint16_t _) {
+        branchIfTrue(carryFlag);
+    }
+    void opBranchOnOverflowClear(uint16_t _) {
+        branchIfTrue(!overflowFlag);
+    }
+
+    void opBranchOnOverflowSet(uint16_t _) {
+        branchIfTrue(overflowFlag);
+    }
+
+    void opBranchOnEqual(uint16_t _) {
+        branchIfTrue(zeroFlag);
+    }
+
+    void opBranchOnNotEqual(uint16_t _) {
+        branchIfTrue(!zeroFlag);
+    }
+    void opBranchOnPlus(uint16_t _){
+        branchIfTrue(!negativeFlag);
+    }
+    void opBranchOnMinus(uint16_t _) {
+        branchIfTrue(negativeFlag);
+    }
+    void opBreak(uint16_t _) {
+        if (breakLocation > 0x00) {
+            pushStack16(programCounter + 1);
+            breakCommandFlag = true;
+            pushStack8(flagsAsInt());
+            programCounter = read16From(breakLocation);
         }
+        doBreak=true;
+    }
+    void opClearCarry(uint16_t _) {
+        carryFlag=false;
+    }
+    void opClearDecimal(uint16_t _) {
+        decimalFlag=false;
+    }
+    void opClearInterrupt(uint16_t _) {
+        interruptDisableFlag=false;
+    }
+    void opClearOverflow(uint16_t _) {
+        overflowFlag=false;
+    }
+    void opCompareAcc(uint8_t value) {
+        compareRegisterTo(ARegister, value);
+    }
+    void opCompareAcc(uint16_t location) {
+        compareRegisterTo(ARegister, memory[location]);
+    }
+    void opCompareX(uint16_t location) {
+        compareRegisterTo(XRegister, memory[location]);
+    }
+    void opCompareX(uint8_t value) {
+        compareRegisterTo(XRegister, value);
+    }
+    void opCompareY(uint8_t value) {
+        compareRegisterTo(YRegister, value);
+    }
+    void opCompareY(uint16_t location) {
+        compareRegisterTo(YRegister, memory[location]);
+    }
+    void opDecrement(uint16_t location) {
+        decToMem(location);
+    }
+    void opDecrementX(uint16_t _) {
+        setXRegister(XRegister-1);
+    }
+    void opDecrementY(uint16_t _) {
+        setYRegister(YRegister-1);
+    }
+    void opExclusiveOR(uint8_t value) {
+        eorToARegister(value);
+    }
+    void opExclusiveOR(uint16_t location) {
+        eorToARegister(memory[location]);
+    }
+    void opIncrement(uint16_t location) {
+        incToMem(location);
+    }
+    void opIncrementX(uint16_t _) {
+        setXRegister(XRegister + 1);
+    }
+    void opIncrementY(uint16_t _) {
+        setYRegister(YRegister + 1);
+    }
+    void opJump(uint16_t location) {
+        programCounter = location;
+    }
+    void opJumpToSubroutine(uint16_t location) {
+        pushStack16(programCounter);
+        programCounter = location;
+    }
+    void opORwithAcc(uint8_t value) {
+        orToARegister(value);
+    }
+    void opORwithAcc(uint16_t location) {
+        orToARegister(memory[location]);
+    }
+    void opLoadAcc(uint16_t location) {
+        setARegister(memory[location]);
+    }
+    void opLoadAcc(uint8_t value) {
+        setARegister(value);
+    }
+    void opLoadX(uint8_t value) {
+        setXRegister(value);
+    }
+    void opLoadX(uint16_t location) {
+        setXRegister(memory[location]);
+    }
+    void opLoadY(uint8_t value) {
+        setYRegister(value);
+    }
+    void opLoadY(uint16_t location) {
+        setYRegister(memory[location]);
+    }
+    void opNoop(uint16_t _) {
+
+    }
+    void opLogicalShiftRight(bool _) {
+        lsrToARegister(ARegister);
+    }
+    void opLogicalShiftRight(uint16_t location) {
+        lsrToMem(location);
+    }
+    void opPushProcessorStatus(uint16_t _) {
+        pushStack8(flagsAsInt());
+    }
+    void opPullProcessorStatus(uint16_t _) {
+        intToFlags(popStack8());
+    }
+    void opPushAcc(uint16_t _) {
+        pushStack8(ARegister);
+    }
+    void opPullAcc(uint16_t _) {
+        setARegister(popStack8());
+    }
+    void opReturnfromInterrupt(uint16_t _) {
+        intToFlags(popStack8());
+        uint16_t counter = popStack16();
+        programCounter = counter;
+    }
+    void opReturnfromSubroutine(uint16_t _) {
+        uint16_t counter = popStack16();
+        programCounter = counter;
+    }
+    void opRotateLeft(bool _) {
+        auto setTo = ARegister << 1u | carryFlag;
+        setCarryFlag(ARegister & 0x80u);
+        setARegister(setTo);
+    }
+    void opRotateLeft(uint16_t location) {
+        rolToMem(location);
+    }
+    void opRotateRight(bool _) {
+        rorToARegister(ARegister);
+    }
+    void opRotateRight(uint16_t location) {
+        rorToMem(location);
+    }
+    void opSetCarry(uint16_t _) {
+        carryFlag=true;
+    }
+    void opSetDecimal(uint16_t _) {
+        decimalFlag=true;
+    }
+    void opSetInterrupt(uint16_t _) {
+        interruptDisableFlag=true;
+    }
+    void opSubtractWithCarry(uint16_t location) {
+        subToARegister(memory[location]);
+    }
+    void opStoreAcc(uint16_t location) {
+        memory[location] = ARegister;
+    }
+    void opStoreX(uint16_t location) {
+        memory[location] = XRegister;
+    }
+    void opStoreY(uint16_t location) {
+        memory[location] = YRegister;
+    }
+    void opTransferAtoX(uint16_t _) {
+        setXRegister(ARegister);
+    }
+    void opTransferAtoY(uint16_t _) {
+        setYRegister(ARegister);
+    }
+    void opTransferStacktoX(uint16_t _) {
+        setXRegister(stackPointer);
+    }
+    void opTransferXtoA(uint16_t _) {
+        setARegister(XRegister);
+    }
+    void opTransferXtoStack(uint16_t _) {
+        stackPointer = XRegister;
+    }
+    void opTransferYtoA(uint16_t _) {
+        setARegister(YRegister);
     }
 
 public:
@@ -429,323 +551,18 @@ public:
             auto opCode = readOpCode();
             auto opLog = OpLog(opCode, previousProgramCounter);
             switch (opCode) {
-                case BReaK : {
-                    if (breakLocation > 0x00) {
-                        pushStack16(programCounter + 1);
-                        breakCommandFlag = true;
-                        pushStack8(flagsAsInt());
-                        programCounter = read16From(breakLocation);
-                    }
-                    printState(opLog);
-                    return;
-                }
-                case CLearCarry :
-                    carryFlag = false;
-                    break;
-                case SEtCarry :
-                    carryFlag = true;
-                    break;
-                case CLearDecimal :
-                    decimalFlag = false;
-                    break;
-                case SEtDecimal :
-                    decimalFlag = true;
-                    break;
-                case CLearInterrupt :
-                    interruptDisableFlag = false;
-                    break;
-                case SEtInterrupt :
-                    interruptDisableFlag = true;
-                    break;
-                case CLearoVerflow :
-                    overflowFlag = false;
-                    break;
-                case JuMP_Ab:
-                    programCounter = locationAbsolute();
-                    break;
-                case JuMP_Indir: {
-                    programCounter = read16From(locationAbsolute());
-                    break;
-                }
-                    // ADC : ADd with Carry
-                case ADdwithCarry_I :
-                case ADdwithCarry_Z :
-                case ADdwithCarry_ZX :
-                case ADdwithCarry_Ab :
-                case ADdwithCarry_AbX :
-                case ADdwithCarry_AbY :
-                case ADdwithCarry_IndexIndir :
-                case ADdwithCarry_IndirIndex :
-                    addToARegister(readByOperation(opCode));
-                    break;
-
-                    // SuBtractwithCarry
-                case SuBtractwithCarry_I :
-                case SuBtractwithCarry_Z :
-                case SuBtractwithCarry_ZX :
-                case SuBtractwithCarry_Ab :
-                case SuBtractwithCarry_AbX :
-                case SuBtractwithCarry_AbY :
-                case SuBtractwithCarry_IndexIndir :
-                case SuBtractwithCarry_IndirIndex :
-                    subToARegister(readByOperation(opCode));
-                    break;
-                    // AND : bitwise AND with accumulator
-                case AND_I :
-                case AND_Z :
-                case AND_ZX :
-                case AND_Ab :
-                case AND_AbX :
-                case AND_AbY :
-                case AND_IndexIndir :
-                case AND_IndirIndex :
-                    andToARegister(readByOperation(opCode));
-                    break;
-                    // EOR : bitwise Exclusive OR with accumulator
-                case ExclusiveOR_I :
-                case ExclusiveOR_Ab :
-                case ExclusiveOR_AbX :
-                case ExclusiveOR_AbY :
-                case ExclusiveOR_Z :
-                case ExclusiveOR_ZX :
-                case ExclusiveOR_IndexIndir :
-                case ExclusiveOR_IndirIndex :
-                    eorToARegister(readByOperation(opCode));
-                    break;
-                    // ORA : bitwise OR with accumulator
-                case ORwithAcc_I :
-                case ORwithAcc_Ab :
-                case ORwithAcc_AbX :
-                case ORwithAcc_AbY :
-                case ORwithAcc_Z :
-                case ORwithAcc_ZX :
-                case ORwithAcc_IndexIndir :
-                case ORwithAcc_IndirIndex :
-                    orToARegister(readByOperation(opCode));
-                    break;
-                    //BIT
-                case BIT_Z :
-                case BIT_Ab :
-                    bitToARegister(readByOperation(opCode));
-                    break;
-                case ArithmeticShiftLeft_Acc :
-                    aslToARegister(ARegister);
-                    break;
-                case ArithmeticShiftLeft_Z :
-                case ArithmeticShiftLeft_ZX :
-                case ArithmeticShiftLeft_Ab :
-                case ArithmeticShiftLeft_AbX :
-                    aslToMem(locationByOperation(opCode));
-                    break;
-                case LogicalShiftRight_Acc :
-                    lsrToARegister(ARegister);
-                    break;
-                case LogicalShiftRight_Z :
-                case LogicalShiftRight_ZX :
-                case LogicalShiftRight_Ab :
-                case LogicalShiftRight_AbX :
-                    lsrToMem(locationByOperation(opCode));
-                    break;
-                case ROtateLeft_Acc : {
-                    auto setTo = ARegister << 1u | carryFlag;
-                    setCarryFlag(ARegister & 0x80u);
-                    setARegister(setTo);
-                    break;
-                }
-                case ROtateLeft_Z :
-                case ROtateLeft_ZX :
-                case ROtateLeft_Ab :
-                case ROtateLeft_AbX :
-                    rolToMem(locationByOperation(opCode));
-                    break;
-                case ROtateRight_Acc :
-                    rorToARegister(ARegister);
-                    break;
-                case ROtateRight_Z :
-                case ROtateRight_ZX :
-                case ROtateRight_Ab :
-                case ROtateRight_AbX :
-                    rorToMem(locationByOperation(opCode));
-                    break;
-                    // Branch
-                case BranchonCarryClear :
-                    branchIfTrue(!carryFlag);
-                    break;
-                case BranchonCarrySet :
-                    branchIfTrue(carryFlag);
-                    break;
-                case BranchonNotEqual :
-                    branchIfTrue(!zeroFlag);
-                    break;
-                case BranchonEQual :
-                    branchIfTrue(zeroFlag);
-                    break;
-                case BranchonPLus :
-                    branchIfTrue(!negativeFlag);
-                    break;
-                case BranchonMInus :
-                    branchIfTrue(negativeFlag);
-                    break;
-                case BranchonoVerflowClear :
-                    branchIfTrue(!overflowFlag);
-                    break;
-                case BranchonoVerflowSet :
-                    branchIfTrue(overflowFlag);
-                    break;
-                    // Compare
-                case CoMPareacc_I :
-                case CoMPareacc_Z :
-                case CoMPareacc_ZX :
-                case CoMPareacc_Ab :
-                case CoMPareacc_AbX :
-                case CoMPareacc_AbY :
-                case CoMPareacc_IndirIndex :
-                case CoMPareacc_IndexIndir :
-                    compareRegisterTo(ARegister, readByOperation(opCode));
-                    break;
-                case ComPareX_I :
-                case ComPareX_Z :
-                case ComPareX_Ab :
-                    compareRegisterTo(XRegister, readByOperation(opCode));
-                    break;
-                case ComPareY_I :
-                case ComPareY_Z :
-                case ComPareY_Ab :
-                    compareRegisterTo(YRegister, readByOperation(opCode));
-                    break;
-
-                    //IN : INcremement
-                case INcrementX :
-                    setXRegister(XRegister + 1);
-                    break;
-                case INcrementY :
-                    setYRegister(YRegister + 1);
-                    break;
-                case INCrement_Z :
-                case INCrement_ZX :
-                case INCrement_Ab :
-                case INCrement_AbX :
-                    incToMem(locationByOperation(opCode));
-                    break;
-                    //DE : DEcremement
-                case DEcrementX :
-                    setXRegister(XRegister - 1);
-                    break;
-                case DEcrementY :
-                    setYRegister(YRegister - 1);
-                    break;
-                case DECrement_Z :
-                case DECrement_ZX :
-                case DECrement_Ab :
-                case DECrement_AbX :
-                    decToMem(locationByOperation(opCode));
-                    break;
-                    // LDA : LoaD Accumulator
-                case LoaDAcc_I :
-                case LoaDAcc_Ab :
-                case LoaDAcc_AbX :
-                case LoaDAcc_AbY :
-                case LoaDAcc_Z :
-                case LoaDAcc_ZX :
-                case LoaDAcc_IndexIndir :
-                case LoaDAcc_IndirIndex :
-                    setARegister(readByOperation(opCode));
-                    break;
-                    // LDX : LoaD Xregister
-                case LoaDX_I :
-                case LoaDX_Ab :
-                case LoaDX_AbY :
-                case LoaDX_Z :
-                case LoaDX_ZY :
-                    setXRegister(readByOperation(opCode));
-                    break;
-                    // LDY : LoaD Yregister
-                case LoaDY_I :
-                case LoaDY_Ab :
-                case LoaDY_AbX :
-                case LoaDY_Z :
-                case LoaDY_ZX :
-                    setYRegister(readByOperation(opCode));
-                    break;
-                    //STA : STore Accumulator
-                case SToreAcc_Ab :
-                case SToreAcc_AbX :
-                case SToreAcc_AbY :
-                case SToreAcc_Z :
-                case SToreAcc_ZX :
-                case SToreAcc_IndexIndir :
-                case SToreAcc_IndirIndex :
-                    memory[locationByOperation(opCode)] = ARegister;
-                    break;
-                    //STX : STore Xregister
-                case SToreX_Ab :
-                case SToreX_Z :
-                case SToreX_ZY :
-                    memory[locationByOperation(opCode)] = XRegister;
-                    break;
-                    //STY : STore Yregister
-                case SToreY_Ab :
-                case SToreY_Z :
-                case SToreY_ZX :
-                    memory[locationByOperation(opCode)] = YRegister;
-                    break;
-                    // T : Transfer
-                case TransferAtoX:
-                    setXRegister(ARegister);
-                    break;
-                case TransferAtoY :
-                    setYRegister(ARegister);
-                    break;
-                case TransferXtoA:
-                    setARegister(XRegister);
-                    break;
-                case TransferYtoA:
-                    setARegister(YRegister);
-                    break;
-                case TransferXtoStack :
-                    stackPointer = XRegister;
-                    break;
-
-                    //stack
-                case TransferStacktoX :
-                    setXRegister(stackPointer);
-                    break;
-                case PusHAcc :
-                    pushStack8(ARegister);
-                    break;
-                case PuLlAcc :
-                    setARegister(popStack8());
-                    break;
-                case PusHProcessorstatus :
-                    pushStack8(flagsAsInt());
-                    break;
-                case PuLlProcessorstatus :
-                    intToFlags(popStack8());
-                    break;
-                case JumptoSubRoutine_Ab : {
-                    pushStack16(programCounter + 1);
-                    programCounter = locationAbsolute();
-                    break;
-                }
-                case ReTurnfromSubroutine : {
-                    uint16_t counter = popStack16();
-                    programCounter = counter + 1;
-                    break;
-                }
-                case ReTurnfromInterrupt : {
-                    intToFlags(popStack8());
-                    uint16_t counter = popStack16();
-                    programCounter = counter;
-                    break;
-                }
-                case NoOPeration :
-                    break;
+#define OPCODE(name, code, function, mode) case name : function(mode());break;
+#include "OpCodeMacro.cpp"
                 default:
                     std::cout << "Unknown OpCode:" << std::hex << (int) memory[programCounter - 1] << std::endl;
 #ifndef NDEBUG
                     printState(opLog);
 #endif
                     return;
+            }
+            if(doBreak) {
+                doBreak = false;
+                return;
             }
             if (previousProgramCounter == programCounter) {
                 std::cout << "Trap found!" << std::endl;

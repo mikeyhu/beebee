@@ -24,7 +24,7 @@ OPCODE(AND_IndexIndir, 0x21, opAnd, IndexIndir) // AND ($NN,X) Indexed Indirect 
 OPCODE(AND_IndirIndex, 0x31, opAnd, IndirIndex) // AND ($NN),Y Indirect Indexed $31 - Z- - - - N
 
 // ASL
-OPCODE(ArithmeticShiftLeft_Acc, 0x0a, opArithmeticShiftLeft, Acc)         // ASL A Accumulator $0a CZ- - - - N
+OPCODE(ArithmeticShiftLeft_Acc, 0x0a, opArithmeticShiftLeft, ACC)         // ASL A Accumulator $0a CZ- - - - N
 OPCODE(ArithmeticShiftLeft_Ab, 0x0e, opArithmeticShiftLeft, Ab)         // ASL $NNNN Absolute $0e CZ- - - - N
 OPCODE(ArithmeticShiftLeft_AbX, 0x1e, opArithmeticShiftLeft, AbX)        // ASL $NNNN,X Absolute,X $1e CZ- - - - N
 OPCODE(ArithmeticShiftLeft_Z, 0x06, opArithmeticShiftLeft, Z)          // ASL $NN Zero Page $06 CZ- - - - N
@@ -33,7 +33,7 @@ OPCODE(ArithmeticShiftLeft_ZX, 0x16, opArithmeticShiftLeft, ZX)         // ASL $
 OPCODE(BranchonCarryClear, 0x90, opBranchonCarryClear, IMP)         // BCC $NN Relative $90 - - - - - - -
 OPCODE(BranchonCarrySet, 0xb0, opBranchonCarrySet, IMP)         // BCS $NN Relative $b0 - - - - - - -
 
-OPCODE(BranchonEQual, 0xf0, opBranchonEqual, IMP)         // BEQ $NN Relative $f0 - - - - - - -
+OPCODE(BranchonEQual, 0xf0, opBranchOnEqual, IMP)         // BEQ $NN Relative $f0 - - - - - - -
 
 OPCODE(BIT_Ab, 0x2c, opBit, Ab)         // BIT $NNNN Absolute $2c - Z- - - VN
 OPCODE(BIT_Z, 0x24, opBit, Z)          // BIT $NN Zero Page $24 - Z- - - VN
@@ -48,7 +48,7 @@ OPCODE(BReaK, 0x00, opBreak, IMP)                 // BRK Implied $00 - - - - - -
 
 OPCODE(BranchonoVerflowClear, 0x50, opBranchOnOverflowClear, IMP) // BVC $NN Relative $50 - - - - - - -
 
-OPCODE(BranchonoVerflowSet, 0x70, opBranchonOverflowSet, IMP)   // BVS $NN Relative $70 - - - - - - -
+OPCODE(BranchonoVerflowSet, 0x70, opBranchOnOverflowSet, IMP)   // BVS $NN Relative $70 - - - - - - -
 
 OPCODE(CLearCarry, 0x18, opClearCarry, IMP)            // CLC Implied $18 C- - - - - -
 OPCODE(CLearDecimal, 0xd8, opClearDecimal, IMP)          // CLD Implied $d8 - - - D- - - Clear Decimal
@@ -98,7 +98,7 @@ OPCODE(INcrementX, 0xe8, opIncrementX, IMP)            // INX Implied $e8 - Z- -
 OPCODE(INcrementY, 0xc8, opIncrementY, IMP)            // INY Implied $c8 - Z- - - - N
 
 OPCODE(JuMP_Ab, 0x4c, opJump, Ab)             // JMP $NNNN Absolute $4c - - - - - - -
-OPCODE(JuMP_Indir, 0x6c, opJump, IMP)          // JMP $NN Indirect $6c - - - - - - -
+OPCODE(JuMP_Indir, 0x6c, opJump, INDIR)          // JMP $NN Indirect $6c - - - - - - -
 
 OPCODE(JumptoSubRoutine_Ab, 0x20, opJumpToSubroutine, Ab) // JSR $NNNN Absolute $20 - - - - - - -
 
@@ -115,7 +115,7 @@ OPCODE(LoaDX_I, 0xa2, opLoadX, I)          // LDX #$NN Immediate $a2 - Z- - - - 
 OPCODE(LoaDX_Ab, 0xae, opLoadX, Ab)         // LDX $NNNN Absolute $ae - Z- - - - N
 OPCODE(LoaDX_AbY, 0xbe, opLoadX, AbY)        // LDX $NNNN,Y Absolute,Y $be - Z- - - - N
 OPCODE(LoaDX_Z, 0xa6, opLoadX, Z)          // LDX $NN Zero Page $a6 - Z- - - - N
-OPCODE(LoaDX_ZY, 0xb6, opLoadX, IMP)         // LDX $NN,Y Zero Page,Y $b6 - Z- - - - N
+OPCODE(LoaDX_ZY, 0xb6, opLoadX, ZY)         // LDX $NN,Y Zero Page,Y $b6 - Z- - - - N
 
 OPCODE(LoaDY_I, 0xa0, opLoadY, I)          // LDY #$NN Immediate $a0 - Z- - - - N
 OPCODE(LoaDY_Ab, 0xac, opLoadY, Ab)         // LDY $NNNN Absolute $ac - Z- - - - N
@@ -123,7 +123,7 @@ OPCODE(LoaDY_AbX, 0xbc, opLoadY, AbX)        // LDY $NNNN,X Absolute,X $bc - Z- 
 OPCODE(LoaDY_Z, 0xa4, opLoadY, Z)          // LDY $NN Zero Page $a4 - Z- - - - N
 OPCODE(LoaDY_ZX, 0xb4, opLoadY, ZX)         // LDY $NN,X Zero Page,X $b4 - Z- - - - N
 
-OPCODE(LogicalShiftRight_Acc, 0x4a, opLogicalShiftRight, IMP)        // LSR A Accumulator $4a CZ- - - - N
+OPCODE(LogicalShiftRight_Acc, 0x4a, opLogicalShiftRight, ACC)        // LSR A Accumulator $4a CZ- - - - N
 OPCODE(LogicalShiftRight_Ab, 0x4e, opLogicalShiftRight, Ab)         // LSR $NNNN Absolute $4e CZ- - - - N
 OPCODE(LogicalShiftRight_AbX, 0x5e, opLogicalShiftRight, AbX)        // LSR $NNNN,X Absolute,X $5e CZ- - - - N
 OPCODE(LogicalShiftRight_Z, 0x46, opLogicalShiftRight, Z)          // LSR $NN Zero Page $46 CZ- - - - N
@@ -145,13 +145,13 @@ OPCODE(PusHProcessorstatus, 0x08, opPushProcessorStatus, IMP)   // PHP Implied $
 OPCODE(PuLlAcc, 0x68, opPullAcc, IMP)               // PLA Implied $68 - Z- - - - N
 OPCODE(PuLlProcessorstatus, 0x28, opPullProcessorStatus, IMP)   // PLP Implied $28 CZIDBVN
 
-OPCODE(ROtateLeft_Acc, 0x2a, opRotateLeft, IMP)        // ROL A Accumulator $2a CZ- - - - N
+OPCODE(ROtateLeft_Acc, 0x2a, opRotateLeft, ACC)        // ROL A Accumulator $2a CZ- - - - N
 OPCODE(ROtateLeft_Ab, 0x2e, opRotateLeft, Ab)         // ROL $NNNN Absolute $2e CZ- - - - N
 OPCODE(ROtateLeft_AbX, 0x3e, opRotateLeft, AbX)        // ROL $NNNN,X Absolute,X $3e CZ- - - - N
 OPCODE(ROtateLeft_Z, 0x26, opRotateLeft, Z)          // ROL $NN Zero Page $26 CZ- - - - N
 OPCODE(ROtateLeft_ZX, 0x36, opRotateLeft, ZX)         // ROL $NN,X Zero Page,X $36 CZ- - - - N
 
-OPCODE(ROtateRight_Acc, 0x6a, opRotateRight, IMP)        // ROR A Accumulator $6a CZ- - - - N
+OPCODE(ROtateRight_Acc, 0x6a, opRotateRight, ACC)        // ROR A Accumulator $6a CZ- - - - N
 OPCODE(ROtateRight_Ab, 0x6e, opRotateRight, Ab)         // ROR $NNNN Absolute $7e CZ- - - - N
 OPCODE(ROtateRight_AbX, 0x7e, opRotateRight, AbX)        // ROR $NNNN,X Absolute,X $6e CZ- - - - N
 OPCODE(ROtateRight_Z, 0x66, opRotateRight, Z)          // ROR $NN Zero Page $66 CZ- - - - N
@@ -185,7 +185,7 @@ OPCODE(SToreAcc_IndirIndex, 0x91, opStoreAcc, IndirIndex) // STA ($NN),Y Indirec
 
 OPCODE(SToreX_Ab, 0x8e, opStoreX, Ab)         // STX $NNNN Absolute $8e - - - - - - -
 OPCODE(SToreX_Z, 0x86, opStoreX, Z)          // STX $NN Zero Page $86 - - - - - - -
-OPCODE(SToreX_ZY, 0x96, opStoreX, IMP)         // STX $NN,Y Zero Page,Y $96 - - - - - - -
+OPCODE(SToreX_ZY, 0x96, opStoreX, ZY)         // STX $NN,Y Zero Page,Y $96 - - - - - - -
 
 OPCODE(SToreY_Ab, 0x8c, opStoreY, Ab)         // STY $NNNN Absolute $8c - - - - - - -
 OPCODE(SToreY_Z, 0x84, opStoreY, Z)          // STY $NN Zero Page $84 - - - - - - -
