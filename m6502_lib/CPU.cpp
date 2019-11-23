@@ -359,7 +359,7 @@ class CPU {
     }
 
     void opJumpToSubroutine(uint16_t location) {
-        pushStack16(programCounter);
+        pushStack16(programCounter - 1);
         programCounter = location;
     }
 
@@ -437,7 +437,7 @@ class CPU {
 
     void opReturnfromSubroutine(uint16_t _) {
         uint16_t counter = popStack16();
-        programCounter = counter;
+        programCounter = counter + 1;
     }
 
     void opRotateLeft(bool _) {

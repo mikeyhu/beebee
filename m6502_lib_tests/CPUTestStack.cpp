@@ -65,7 +65,7 @@ TEST(CPUStack, JumptoSubRoutine_Ab) {
     EXPECT_EQ(0x00, cpu.getARegister());
     EXPECT_EQ(0xfd, cpu.getStackPointer());
     EXPECT_EQ(0x00, cpu.getMemory()[0x1ff]);
-    EXPECT_EQ(0x06, cpu.getMemory()[0x1fe]);
+    EXPECT_EQ(0x05, cpu.getMemory()[0x1fe]);
 }
 
 TEST(CPUStack, ReTurnfromSubroutine) {
