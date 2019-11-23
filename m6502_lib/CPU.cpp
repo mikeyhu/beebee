@@ -152,8 +152,8 @@ class CPU {
     uint16_t AbY() {
         return Ab() + YRegister;
     }
-    uint16_t IMP() {
-        return 0;
+    bool IMP() {
+        return false;
     }
     uint16_t INDIR() {
         return read16From(Ab());
@@ -216,35 +216,35 @@ class CPU {
         setOverflowFlag( (mem & 0x40) << 6);
     }
 
-    void opBranchonCarryClear(uint16_t _) {
+    void opBranchonCarryClear(bool _) {
         branchIfTrue(!carryFlag);
     }
 
-    void opBranchonCarrySet(uint16_t _) {
+    void opBranchonCarrySet(bool _) {
         branchIfTrue(carryFlag);
     }
-    void opBranchOnOverflowClear(uint16_t _) {
+    void opBranchOnOverflowClear(bool _) {
         branchIfTrue(!overflowFlag);
     }
 
-    void opBranchOnOverflowSet(uint16_t _) {
+    void opBranchOnOverflowSet(bool _) {
         branchIfTrue(overflowFlag);
     }
 
-    void opBranchOnEqual(uint16_t _) {
+    void opBranchOnEqual(bool _) {
         branchIfTrue(zeroFlag);
     }
 
-    void opBranchOnNotEqual(uint16_t _) {
+    void opBranchOnNotEqual(bool _) {
         branchIfTrue(!zeroFlag);
     }
-    void opBranchOnPlus(uint16_t _){
+    void opBranchOnPlus(bool _){
         branchIfTrue(!negativeFlag);
     }
-    void opBranchOnMinus(uint16_t _) {
+    void opBranchOnMinus(bool _) {
         branchIfTrue(negativeFlag);
     }
-    void opBreak(uint16_t _) {
+    void opBreak(bool _) {
         if (breakLocation > 0x00) {
             pushStack16(programCounter + 1);
             breakCommandFlag = true;
@@ -289,10 +289,10 @@ class CPU {
         setFlagsBasedOnValue(val);
         memory[location]=val;
     }
-    void opDecrementX(uint16_t _) {
+    void opDecrementX(bool _) {
         setXRegister(XRegister-1);
     }
-    void opDecrementY(uint16_t _) {
+    void opDecrementY(bool _) {
         setYRegister(YRegister-1);
     }
     void opExclusiveOR(uint8_t value) {
@@ -307,10 +307,10 @@ class CPU {
         setFlagsBasedOnValue(val);
         memory[location]=val;
     }
-    void opIncrementX(uint16_t _) {
+    void opIncrementX(bool _) {
         setXRegister(XRegister + 1);
     }
-    void opIncrementY(uint16_t _) {
+    void opIncrementY(bool _) {
         setYRegister(YRegister + 1);
     }
     void opJump(uint16_t location) {
@@ -344,7 +344,7 @@ class CPU {
     void opLoadY(uint16_t location) {
         setYRegister(memory[location]);
     }
-    void opNoop(uint16_t _) {
+    void opNoop(bool _) {
 
     }
     void opLogicalShiftRight(bool _) {
@@ -359,16 +359,16 @@ class CPU {
         setFlagsBasedOnValue(setTo);
         memory[location]=setTo;
     }
-    void opPushProcessorStatus(uint16_t _) {
+    void opPushProcessorStatus(bool _) {
         pushStack8(flagsAsInt());
     }
-    void opPullProcessorStatus(uint16_t _) {
+    void opPullProcessorStatus(bool _) {
         intToFlags(popStack8());
     }
-    void opPushAcc(uint16_t _) {
+    void opPushAcc(bool _) {
         pushStack8(ARegister);
     }
-    void opPullAcc(uint16_t _) {
+    void opPullAcc(bool _) {
         setARegister(popStack8());
     }
     void opReturnfromInterrupt(uint16_t _) {
@@ -404,19 +404,22 @@ class CPU {
         setFlagsBasedOnValue(setTo);
         memory[location]=setTo;
     }
-    void opSetCarry(uint16_t _) {
+    void opSetCarry(bool _) {
         carryFlag=true;
     }
-    void opSetDecimal(uint16_t _) {
+    void opSetDecimal(bool _) {
         decimalFlag=true;
     }
-    void opSetInterrupt(uint16_t _) {
+    void opSetInterrupt(bool _) {
         interruptDisableFlag=true;
     }
     void opSubtractWithCarry(uint16_t location) {
         auto mem=memory[location];
         uint8_t sum = ARegister - mem - !isCarryFlag();
         setFlagsBasedOnValue(sum);
+        if(mem > ARegister) {
+            setNegativeFlag(true);
+        }
         setOverflowFlag(false);
         std::cout << "SBC reg:" << std::hex << (int)ARegister << " val:" << (int)mem << " res:" << (int)sum << std::endl;
         ARegister = sum;
@@ -430,22 +433,22 @@ class CPU {
     void opStoreY(uint16_t location) {
         memory[location] = YRegister;
     }
-    void opTransferAtoX(uint16_t _) {
+    void opTransferAtoX(bool _) {
         setXRegister(ARegister);
     }
-    void opTransferAtoY(uint16_t _) {
+    void opTransferAtoY(bool _) {
         setYRegister(ARegister);
     }
-    void opTransferStacktoX(uint16_t _) {
+    void opTransferStacktoX(bool _) {
         setXRegister(stackPointer);
     }
-    void opTransferXtoA(uint16_t _) {
+    void opTransferXtoA(bool _) {
         setARegister(XRegister);
     }
-    void opTransferXtoStack(uint16_t _) {
+    void opTransferXtoStack(bool _) {
         stackPointer = XRegister;
     }
-    void opTransferYtoA(uint16_t _) {
+    void opTransferYtoA(bool _) {
         setARegister(YRegister);
     }
 
@@ -466,7 +469,7 @@ public:
 #define OPCODE(name, code, function, mode) case name : function(mode());break;
 #include "OpCodeMacro.cpp"
                 default:
-                    std::cout << "Unknown OpCode:" << std::hex << (int) memory[programCounter - 1] << std::endl;
+                    std::cout << "Unknown OpCode:" << std::endl;
 #ifndef NDEBUG
                     printState(opLog);
 #endif
