@@ -142,18 +142,18 @@ TEST(CPUBitwise, BIT_Z) {
     std::array<uint8_t, 16> mem = {LoaDAcc_I, 0xff, BIT_Z, 0x05, BReaK, 0xff};
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
-    EXPECT_FALSE(cpu.isZeroFlag());
-    EXPECT_TRUE(cpu.isNegativeFlag());
-    EXPECT_TRUE(cpu.isOverflowFlag());
+    EXPECT_FALSE(cpu.getFlags().isZeroFlag());
+    EXPECT_TRUE(cpu.getFlags().isNegativeFlag());
+    EXPECT_TRUE(cpu.getFlags().isOverflowFlag());
 }
 
 TEST(CPUBitwise, BIT_Ab) {
     std::array<uint8_t, 16> mem = {LoaDAcc_I, 0xff, BIT_Ab, 0x06, 0x00, BReaK, 0xff};
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
-    EXPECT_FALSE(cpu.isZeroFlag());
-    EXPECT_TRUE(cpu.isNegativeFlag());
-    EXPECT_TRUE(cpu.isOverflowFlag());
+    EXPECT_FALSE(cpu.getFlags().isZeroFlag());
+    EXPECT_TRUE(cpu.getFlags().isNegativeFlag());
+    EXPECT_TRUE(cpu.getFlags().isOverflowFlag());
 }
 
 TEST(CPUBitwise, ArithmeticShiftLeft_Acc) {
@@ -200,7 +200,7 @@ TEST(CPUBitwise, LogicalShiftRight_Acc_nonzero) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x01, cpu.getARegister());
-    EXPECT_TRUE(cpu.isCarryFlag());
+    EXPECT_TRUE(cpu.getFlags().isCarryFlag());
 }
 
 TEST(CPUBitwise, LogicalShiftRight_Acc_zero) {
@@ -208,8 +208,8 @@ TEST(CPUBitwise, LogicalShiftRight_Acc_zero) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x0, cpu.getARegister());
-    EXPECT_TRUE(cpu.isZeroFlag());
-    EXPECT_TRUE(cpu.isCarryFlag());
+    EXPECT_TRUE(cpu.getFlags().isZeroFlag());
+    EXPECT_TRUE(cpu.getFlags().isCarryFlag());
 }
 
 TEST(CPUBitwise, LogicalShiftRight_Z) {
@@ -218,7 +218,7 @@ TEST(CPUBitwise, LogicalShiftRight_Z) {
     cpu.run();
     EXPECT_EQ(0x00, cpu.getARegister());
     EXPECT_EQ(0x01, cpu.getMemoryAt(0x03));
-    EXPECT_TRUE(cpu.isCarryFlag());
+    EXPECT_TRUE(cpu.getFlags().isCarryFlag());
 }
 
 TEST(CPUBitwise, LogicalShiftRight_ZX) {
@@ -227,7 +227,7 @@ TEST(CPUBitwise, LogicalShiftRight_ZX) {
     cpu.run();
     EXPECT_EQ(0x00, cpu.getARegister());
     EXPECT_EQ(0x01, cpu.getMemoryAt(0x05));
-    EXPECT_TRUE(cpu.isCarryFlag());
+    EXPECT_TRUE(cpu.getFlags().isCarryFlag());
 }
 
 TEST(CPUBitwise, LogicalShiftRight_Ab) {
@@ -236,7 +236,7 @@ TEST(CPUBitwise, LogicalShiftRight_Ab) {
     cpu.run();
     EXPECT_EQ(0x00, cpu.getARegister());
     EXPECT_EQ(0x01, cpu.getMemoryAt(0x04));
-    EXPECT_TRUE(cpu.isCarryFlag());
+    EXPECT_TRUE(cpu.getFlags().isCarryFlag());
 }
 
 TEST(CPUBitwise, LogicalShiftRight_AbX) {
@@ -245,7 +245,7 @@ TEST(CPUBitwise, LogicalShiftRight_AbX) {
     cpu.run();
     EXPECT_EQ(0x00, cpu.getARegister());
     EXPECT_EQ(0x01, cpu.getMemoryAt(0x06));
-    EXPECT_TRUE(cpu.isCarryFlag());
+    EXPECT_TRUE(cpu.getFlags().isCarryFlag());
 }
 
 TEST(CPUBitwise, ROtateLeft_Acc) {
@@ -253,8 +253,8 @@ TEST(CPUBitwise, ROtateLeft_Acc) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x2, cpu.getARegister());
-    EXPECT_FALSE(cpu.isZeroFlag());
-    EXPECT_TRUE(cpu.isCarryFlag());
+    EXPECT_FALSE(cpu.getFlags().isZeroFlag());
+    EXPECT_TRUE(cpu.getFlags().isCarryFlag());
 }
 
 TEST(CPUBitwise, ROtateLeft_Z) {
@@ -263,8 +263,8 @@ TEST(CPUBitwise, ROtateLeft_Z) {
     cpu.run();
     EXPECT_EQ(0x0, cpu.getARegister());
     EXPECT_EQ(0x2, cpu.getMemoryAt(0x03));
-    EXPECT_FALSE(cpu.isZeroFlag());
-    EXPECT_TRUE(cpu.isCarryFlag());
+    EXPECT_FALSE(cpu.getFlags().isZeroFlag());
+    EXPECT_TRUE(cpu.getFlags().isCarryFlag());
 }
 
 TEST(CPUBitwise, ROtateLeft_ZX) {
@@ -273,8 +273,8 @@ TEST(CPUBitwise, ROtateLeft_ZX) {
     cpu.run();
     EXPECT_EQ(0x0, cpu.getARegister());
     EXPECT_EQ(0x2, cpu.getMemoryAt(0x05));
-    EXPECT_FALSE(cpu.isZeroFlag());
-    EXPECT_TRUE(cpu.isCarryFlag());
+    EXPECT_FALSE(cpu.getFlags().isZeroFlag());
+    EXPECT_TRUE(cpu.getFlags().isCarryFlag());
 }
 
 TEST(CPUBitwise, ROtateLeft_Ab) {
@@ -283,8 +283,8 @@ TEST(CPUBitwise, ROtateLeft_Ab) {
     cpu.run();
     EXPECT_EQ(0x0, cpu.getARegister());
     EXPECT_EQ(0x2, cpu.getMemoryAt(0x04));
-    EXPECT_FALSE(cpu.isZeroFlag());
-    EXPECT_TRUE(cpu.isCarryFlag());
+    EXPECT_FALSE(cpu.getFlags().isZeroFlag());
+    EXPECT_TRUE(cpu.getFlags().isCarryFlag());
 }
 
 TEST(CPUBitwise, ROtateLeft_AbX) {
@@ -293,8 +293,8 @@ TEST(CPUBitwise, ROtateLeft_AbX) {
     cpu.run();
     EXPECT_EQ(0x0, cpu.getARegister());
     EXPECT_EQ(0x2, cpu.getMemoryAt(0x06));
-    EXPECT_FALSE(cpu.isZeroFlag());
-    EXPECT_TRUE(cpu.isCarryFlag());
+    EXPECT_FALSE(cpu.getFlags().isZeroFlag());
+    EXPECT_TRUE(cpu.getFlags().isCarryFlag());
 }
 
 TEST(CPUBitwise, ROtateRight_Acc) {
@@ -302,8 +302,8 @@ TEST(CPUBitwise, ROtateRight_Acc) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x1, cpu.getARegister());
-    EXPECT_FALSE(cpu.isZeroFlag());
-    EXPECT_TRUE(cpu.isCarryFlag());
+    EXPECT_FALSE(cpu.getFlags().isZeroFlag());
+    EXPECT_TRUE(cpu.getFlags().isCarryFlag());
 }
 
 TEST(CPUBitwise, ROtateRight_Z) {
@@ -312,8 +312,8 @@ TEST(CPUBitwise, ROtateRight_Z) {
     cpu.run();
     EXPECT_EQ(0x0, cpu.getARegister());
     EXPECT_EQ(0x01, cpu.getMemoryAt(0x03));
-    EXPECT_FALSE(cpu.isZeroFlag());
-    EXPECT_TRUE(cpu.isCarryFlag());
+    EXPECT_FALSE(cpu.getFlags().isZeroFlag());
+    EXPECT_TRUE(cpu.getFlags().isCarryFlag());
 }
 
 TEST(CPUBitwise, ROtateRight_ZX) {
@@ -322,8 +322,8 @@ TEST(CPUBitwise, ROtateRight_ZX) {
     cpu.run();
     EXPECT_EQ(0x0, cpu.getARegister());
     EXPECT_EQ(0x01, cpu.getMemoryAt(0x05));
-    EXPECT_FALSE(cpu.isZeroFlag());
-    EXPECT_TRUE(cpu.isCarryFlag());
+    EXPECT_FALSE(cpu.getFlags().isZeroFlag());
+    EXPECT_TRUE(cpu.getFlags().isCarryFlag());
 }
 
 TEST(CPUBitwise, ROtateRight_Ab) {
@@ -332,8 +332,8 @@ TEST(CPUBitwise, ROtateRight_Ab) {
     cpu.run();
     EXPECT_EQ(0x0, cpu.getARegister());
     EXPECT_EQ(0x01, cpu.getMemoryAt(0x04));
-    EXPECT_FALSE(cpu.isZeroFlag());
-    EXPECT_TRUE(cpu.isCarryFlag());
+    EXPECT_FALSE(cpu.getFlags().isZeroFlag());
+    EXPECT_TRUE(cpu.getFlags().isCarryFlag());
 }
 
 TEST(CPUBitwise, ROtateRight_AbX) {
@@ -342,6 +342,6 @@ TEST(CPUBitwise, ROtateRight_AbX) {
     cpu.run();
     EXPECT_EQ(0x0, cpu.getARegister());
     EXPECT_EQ(0x01, cpu.getMemoryAt(0x06));
-    EXPECT_FALSE(cpu.isZeroFlag());
-    EXPECT_TRUE(cpu.isCarryFlag());
+    EXPECT_FALSE(cpu.getFlags().isZeroFlag());
+    EXPECT_TRUE(cpu.getFlags().isCarryFlag());
 }

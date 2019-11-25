@@ -44,18 +44,18 @@ TEST(CPUStack, TransferStacktoX) {
 TEST(CPUStack, PHP_PLP) {
     std::array<uint8_t, 0x5> mem = {PusHProcessorstatus, LoaDAcc_I, 0x01, PuLlProcessorstatus, BReaK};
     auto cpu = CPU(0, mem, cycleCallback);
-    cpu.setCarryFlag(true);
-    cpu.setZeroFlag(true);
-    cpu.setDecimalFlag(true);
-    cpu.setOverflowFlag(true);
-    cpu.setNegativeFlag(true);
+    cpu.getFlags().setCarryFlag(true);
+    cpu.getFlags().setZeroFlag(true);
+    cpu.getFlags().setDecimalFlag(true);
+    cpu.getFlags().setOverflowFlag(true);
+    cpu.getFlags().setNegativeFlag(true);
     cpu.run();
     EXPECT_EQ(0x05, cpu.getProgramCounter());
-    EXPECT_TRUE(cpu.isCarryFlag());
-    EXPECT_TRUE(cpu.isZeroFlag());
-    EXPECT_TRUE(cpu.isDecimalFlag());
-    EXPECT_TRUE(cpu.isOverflowFlag());
-    EXPECT_TRUE(cpu.isNegativeFlag());
+    EXPECT_TRUE(cpu.getFlags().isCarryFlag());
+    EXPECT_TRUE(cpu.getFlags().isZeroFlag());
+    EXPECT_TRUE(cpu.getFlags().isDecimalFlag());
+    EXPECT_TRUE(cpu.getFlags().isOverflowFlag());
+    EXPECT_TRUE(cpu.getFlags().isNegativeFlag());
 }
 
 TEST(CPUStack, JumptoSubRoutine_Ab) {
@@ -81,11 +81,11 @@ TEST(CPUStack, ReTurnfromInterrupt) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x0e, cpu.getProgramCounter());
-    EXPECT_TRUE(cpu.isCarryFlag());
-    EXPECT_FALSE(cpu.isZeroFlag());
-    EXPECT_TRUE(cpu.isDecimalFlag());
-    EXPECT_TRUE(cpu.isOverflowFlag());
-    EXPECT_TRUE(cpu.isNegativeFlag());
+    EXPECT_TRUE(cpu.getFlags().isCarryFlag());
+    EXPECT_FALSE(cpu.getFlags().isZeroFlag());
+    EXPECT_TRUE(cpu.getFlags().isDecimalFlag());
+    EXPECT_TRUE(cpu.getFlags().isOverflowFlag());
+    EXPECT_TRUE(cpu.getFlags().isNegativeFlag());
 
     EXPECT_EQ(0xff, cpu.getXRegister());
 }

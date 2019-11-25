@@ -17,7 +17,7 @@
 
 #endif
 #include "Memory.cpp"
-
+#include "Flags.cpp"
 #include "OpLog.cpp"
 
 template<std::size_t SIZE>
@@ -31,13 +31,7 @@ class CPU {
     uint8_t stackPointer = 0xff;
     uint16_t programCounter;
     uint16_t previousProgramCounter;
-    bool carryFlag = false;
-    bool zeroFlag = false;
-    bool interruptDisableFlag = false;
-    bool breakCommandFlag = true;
-    bool decimalFlag = false;
-    bool overflowFlag = false;
-    bool negativeFlag = false;
+    Flags flags = Flags();
     std::function<void()> cycleCallback;
     Memory<SIZE>* memory;
     uint16_t breakLocation = 0;
@@ -88,35 +82,14 @@ class CPU {
 #ifndef NDEBUG
         std::cout << "CMP reg:" << std::hex << (int) reg << " val:" << (int) value << std::endl;
 #endif
-        zeroFlag = value == reg;
-        carryFlag = reg >= value;
-        negativeFlag = reg < value;
-    }
-
-    uint8_t flagsAsInt() {
-        return carryFlag |
-               (zeroFlag << 1u) |
-               (interruptDisableFlag << 2u) |
-               (decimalFlag << 3u) |
-               (true << 4u) |
-               (true << 5u) |
-               (overflowFlag << 6u) |
-               (negativeFlag << 7u);
-    }
-
-    void intToFlags(uint8_t flags) {
-        carryFlag = flags & 1u;
-        zeroFlag = flags >> 1u & 1u;
-        interruptDisableFlag = flags >> 2u & 1u;
-        decimalFlag = flags >> 3u & 1u;
-        breakCommandFlag = true;
-        overflowFlag = flags >> 6u & 1u;
-        negativeFlag = flags >> 7u & 1u;
+        flags.setZeroFlag(value == reg);
+        flags.setCarryFlag(reg >= value);
+        flags.setNegativeFlag(reg < value);
     }
 
     void setFlagsBasedOnValue(uint8_t value) {
-        zeroFlag = value == 0u;
-        negativeFlag = value >> 7 != 0;
+        flags.setZeroFlag(value == 0u);
+        flags.setNegativeFlag(value >> 7 != 0);
     }
 
     // Memory Modes
@@ -177,16 +150,16 @@ class CPU {
     void opAddWithCarry(uint8_t value) {
         int sum = ARegister + value;
         if (sum > 0xff) {
-            carryFlag = 1;
+            flags.setCarryFlag(1);
         }
-        overflowFlag = false;
+        flags.setOverflowFlag(false);
 #ifndef NDEBUG
         std::cout << "ADC reg:" << std::hex << (int) ARegister << " val:" << (int) value << " sum:" << (int) sum
                   << std::endl;
 #endif
         ARegister = sum;
-        zeroFlag = ARegister == 0;
-        negativeFlag = ARegister >> 7 != 0;
+        flags.setZeroFlag(ARegister == 0);
+        flags.setNegativeFlag(ARegister >> 7 != 0);
     }
 
     void opAddWithCarry(uint16_t location) {
@@ -195,14 +168,14 @@ class CPU {
 
     void opArithmeticShiftLeft(bool _) {
         auto setTo = ARegister << 1u;
-        setCarryFlag(setTo > 0xff);
+        flags.setCarryFlag(setTo > 0xff);
         setARegister(setTo);
     }
 
     void opArithmeticShiftLeft(uint16_t location) {
         auto mem = memory->getValue(location);
         auto setTo = mem << 1u;
-        setCarryFlag(setTo > 0xff);
+        flags.setCarryFlag(setTo > 0xff);
         setFlagsBasedOnValue(setTo);
         memory->setValue(location, setTo);
     }
@@ -221,67 +194,67 @@ class CPU {
         std::cout << std::hex << "BIT A:" << (int) ARegister << " ZP:" << (int) mem << std::endl;
 #endif
         auto bit = ARegister & mem;
-        setZeroFlag(bit == 0);
-        setNegativeFlag((mem & 0x80) << 7);
-        setOverflowFlag((mem & 0x40) << 6);
+        flags.setZeroFlag(bit == 0);
+        flags.setNegativeFlag((mem & 0x80) << 7);
+        flags.setOverflowFlag((mem & 0x40) << 6);
     }
 
     void opBranchonCarryClear(bool _) {
-        branchIfTrue(!carryFlag);
+        branchIfTrue(!flags.isCarryFlag());
     }
 
     void opBranchonCarrySet(bool _) {
-        branchIfTrue(carryFlag);
+        branchIfTrue(flags.isCarryFlag());
     }
 
     void opBranchOnOverflowClear(bool _) {
-        branchIfTrue(!overflowFlag);
+        branchIfTrue(!flags.isOverflowFlag());
     }
 
     void opBranchOnOverflowSet(bool _) {
-        branchIfTrue(overflowFlag);
+        branchIfTrue(flags.isOverflowFlag());
     }
 
     void opBranchOnEqual(bool _) {
-        branchIfTrue(zeroFlag);
+        branchIfTrue(flags.isZeroFlag());
     }
 
     void opBranchOnNotEqual(bool _) {
-        branchIfTrue(!zeroFlag);
+        branchIfTrue(!flags.isZeroFlag());
     }
 
     void opBranchOnPlus(bool _) {
-        branchIfTrue(!negativeFlag);
+        branchIfTrue(!flags.isNegativeFlag());
     }
 
     void opBranchOnMinus(bool _) {
-        branchIfTrue(negativeFlag);
+        branchIfTrue(flags.isNegativeFlag());
     }
 
     void opBreak(bool _) {
         if (breakLocation > 0x00) {
             pushStack16(programCounter + 1);
-            breakCommandFlag = true;
-            pushStack8(flagsAsInt());
+            flags.setBreakCommandFlag(true);
+            pushStack8(flags.flagsAsInt());
             programCounter = memory->get16Value(breakLocation);
         }
         doBreak = true;
     }
 
     void opClearCarry(uint16_t _) {
-        carryFlag = false;
+        flags.setCarryFlag(false);
     }
 
     void opClearDecimal(uint16_t _) {
-        decimalFlag = false;
+        flags.setDecimalFlag(false);
     }
 
     void opClearInterrupt(uint16_t _) {
-        interruptDisableFlag = false;
+        flags.setInterruptDisableFlag(false);
     }
 
     void opClearOverflow(uint16_t _) {
-        overflowFlag = false;
+        flags.setOverflowFlag(false);
     }
 
     void opCompareAcc(uint8_t value) {
@@ -393,24 +366,24 @@ class CPU {
 
     void opLogicalShiftRight(bool _) {
         auto setTo = ARegister >> 1u;
-        setCarryFlag(ARegister & 1u);
+        flags.setCarryFlag(ARegister & 1u);
         setARegister(setTo);
     }
 
     void opLogicalShiftRight(uint16_t location) {
         auto mem = memory->getValue(location);
         auto setTo = mem >> 1u;
-        setCarryFlag(mem & 1u);
+        flags.setCarryFlag(mem & 1u);
         setFlagsBasedOnValue(setTo);
         memory->setValue(location, setTo);
     }
 
     void opPushProcessorStatus(bool _) {
-        pushStack8(flagsAsInt());
+        pushStack8(flags.flagsAsInt());
     }
 
     void opPullProcessorStatus(bool _) {
-        intToFlags(popStack8());
+        flags.intToFlags(popStack8());
     }
 
     void opPushAcc(bool _) {
@@ -422,7 +395,7 @@ class CPU {
     }
 
     void opReturnfromInterrupt(uint16_t _) {
-        intToFlags(popStack8());
+        flags.intToFlags(popStack8());
         uint16_t counter = popStack16();
         programCounter = counter;
     }
@@ -433,53 +406,53 @@ class CPU {
     }
 
     void opRotateLeft(bool _) {
-        auto setTo = ARegister << 1u | carryFlag;
-        setCarryFlag(ARegister & 0x80u);
+        auto setTo = ARegister << 1u | flags.isCarryFlag();
+        flags.setCarryFlag(ARegister & 0x80u);
         setARegister(setTo);
     }
 
     void opRotateLeft(uint16_t location) {
         auto mem = memory->getValue(location);
-        auto setTo = mem << 1u | carryFlag;
-        setCarryFlag(mem & 0x80u);
+        auto setTo = mem << 1u | flags.isCarryFlag();
+        flags.setCarryFlag(mem & 0x80u);
         setFlagsBasedOnValue(setTo);
         memory->setValue(location, setTo);
     }
 
     void opRotateRight(bool _) {
-        auto setTo = ARegister >> 1u | (carryFlag << 7u);
-        setCarryFlag(ARegister & 0x1u);
+        auto setTo = ARegister >> 1u | (flags.isCarryFlag() << 7u);
+        flags.setCarryFlag(ARegister & 0x1u);
         setARegister(setTo);
     }
 
     void opRotateRight(uint16_t location) {
         auto mem = memory->getValue(location);
-        auto setTo = mem >> 1u | (carryFlag << 7u);
-        setCarryFlag(mem & 0x1u);
+        auto setTo = mem >> 1u | (flags.isCarryFlag() << 7u);
+        flags.setCarryFlag(mem & 0x1u);
         setFlagsBasedOnValue(setTo);
         memory->setValue(location, setTo);
     }
 
     void opSetCarry(bool _) {
-        carryFlag = true;
+        flags.setCarryFlag(true);
     }
 
     void opSetDecimal(bool _) {
-        decimalFlag = true;
+        flags.setDecimalFlag(true);
     }
 
     void opSetInterrupt(bool _) {
-        interruptDisableFlag = true;
+        flags.setInterruptDisableFlag(true);
     }
 
     void opSubtractWithCarry(uint16_t location) {
         auto mem = memory->getValue(location);
-        uint8_t sum = ARegister - mem - !isCarryFlag();
+        uint8_t sum = ARegister - mem - !flags.isCarryFlag();
         setFlagsBasedOnValue(sum);
         if (mem > ARegister) {
-            setNegativeFlag(true);
+            flags.setNegativeFlag(true);
         }
-        setOverflowFlag(false);
+        flags.setOverflowFlag(false);
         std::cout << "SBC reg:" << std::hex << (int) ARegister << " val:" << (int) mem << " res:" << (int) sum
                   << std::endl;
         ARegister = sum;
@@ -592,8 +565,8 @@ public:
 
     void setXRegister(uint8_t xRegister) {
         XRegister = xRegister;
-        zeroFlag = XRegister == 0;
-        negativeFlag = XRegister >> 7u != 0;
+        flags.setZeroFlag(XRegister == 0);
+        flags.setNegativeFlag(XRegister >> 7u != 0);
     }
 
     uint8_t getYRegister() const {
@@ -602,56 +575,8 @@ public:
 
     void setYRegister(uint8_t yRegister) {
         YRegister = yRegister;
-        zeroFlag = YRegister == 0;
-        negativeFlag = YRegister >> 7u != 0;
-    }
-
-    bool isDecimalFlag() const {
-        return decimalFlag;
-    }
-
-    void setDecimalFlag(bool flag) {
-        CPU::decimalFlag = flag;
-    }
-
-    bool isZeroFlag() const {
-        return zeroFlag;
-    }
-
-    void setZeroFlag(bool flag) {
-        CPU::zeroFlag = flag;
-    }
-
-    bool isCarryFlag() const {
-        return carryFlag;
-    }
-
-    void setCarryFlag(bool carryFlag) {
-        CPU::carryFlag = carryFlag;
-    }
-
-    bool isNegativeFlag() const {
-        return negativeFlag;
-    }
-
-    void setNegativeFlag(bool negativeFlag) {
-        CPU::negativeFlag = negativeFlag;
-    }
-
-    bool isOverflowFlag() const {
-        return overflowFlag;
-    }
-
-    void setOverflowFlag(bool overflowFlag) {
-        CPU::overflowFlag = overflowFlag;
-    }
-
-    bool isBreakCommandFlag() const {
-        return breakCommandFlag;
-    }
-
-    void setBreakCommandFlag(bool breakCommandFlag) {
-        CPU::breakCommandFlag = breakCommandFlag;
+        flags.setZeroFlag(YRegister == 0);
+        flags.setNegativeFlag(YRegister >> 7u != 0);
     }
 
     uint8_t getStackPointer() const {
@@ -666,16 +591,12 @@ public:
         return breakLocation;
     }
 
+    Flags &getFlags() {
+        return flags;
+    }
+
     void setBreakLocation(uint16_t breakLocation) {
         CPU::breakLocation = breakLocation;
-    }
-
-    bool isInterruptDisableFlag() const {
-        return interruptDisableFlag;
-    }
-
-    void setInterruptDisableFlag(bool interruptDisableFlag) {
-        CPU::interruptDisableFlag = interruptDisableFlag;
     }
 
     const uint8_t getMemoryAt(uint16_t location) const {
@@ -687,14 +608,7 @@ public:
                   << " SP:" << (int) stackPointer
                   << " A:" << (int) ARegister
                   << " X:" << (int) XRegister
-                  << " Y:" << (int) YRegister
-                  << " flags N;" << negativeFlag
-                  << " V;" << overflowFlag
-                  << " -B;" << breakCommandFlag
-                  << " D;" << decimalFlag
-                  << " I;" << interruptDisableFlag
-                  << " Z;" << zeroFlag
-                  << " C;" << carryFlag;
+                  << " Y:" << (int) YRegister;
         for (int i = stackPointer; i <= 0xff; i++) {
             std::cout << " [" << i << ":" << (int) (uint8_t) memory->getValue(0x100 + i) << "]";
         }

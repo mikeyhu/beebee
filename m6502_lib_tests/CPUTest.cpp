@@ -14,7 +14,7 @@ TEST(CPUGeneral, FoundBRK) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.setBreakLocation(0x01);
     cpu.run();
-    EXPECT_TRUE(cpu.isBreakCommandFlag());
+    EXPECT_TRUE(cpu.getFlags().isBreakCommandFlag());
     EXPECT_EQ(0x201, cpu.getProgramCounter());
 }
 
@@ -24,7 +24,7 @@ TEST(CPUGeneral, ADC_I_nocarry) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x1f, cpu.getARegister());
-    EXPECT_FALSE(cpu.isCarryFlag());
+    EXPECT_FALSE(cpu.getFlags().isCarryFlag());
 }
 
 // ADC : ADd with Carry
@@ -33,7 +33,7 @@ TEST(CPUGeneral, ADC_I_carry) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x84, cpu.getARegister());
-    EXPECT_TRUE(cpu.isCarryFlag());
+    EXPECT_TRUE(cpu.getFlags().isCarryFlag());
 }
 
 TEST(CPUGeneral, ADdwithCarry_Z) {
@@ -41,7 +41,7 @@ TEST(CPUGeneral, ADdwithCarry_Z) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x1f, cpu.getARegister());
-    EXPECT_FALSE(cpu.isCarryFlag());
+    EXPECT_FALSE(cpu.getFlags().isCarryFlag());
 }
 
 TEST(CPUGeneral, ADdwithCarry_ZX) {
@@ -49,7 +49,7 @@ TEST(CPUGeneral, ADdwithCarry_ZX) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x1f, cpu.getARegister());
-    EXPECT_FALSE(cpu.isCarryFlag());
+    EXPECT_FALSE(cpu.getFlags().isCarryFlag());
 }
 
 TEST(CPUGeneral, ADdwithCarry_Ab) {
@@ -57,7 +57,7 @@ TEST(CPUGeneral, ADdwithCarry_Ab) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x1f, cpu.getARegister());
-    EXPECT_FALSE(cpu.isCarryFlag());
+    EXPECT_FALSE(cpu.getFlags().isCarryFlag());
 }
 
 TEST(CPUGeneral, ADdwithCarry_AbX) {
@@ -65,7 +65,7 @@ TEST(CPUGeneral, ADdwithCarry_AbX) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x1f, cpu.getARegister());
-    EXPECT_FALSE(cpu.isCarryFlag());
+    EXPECT_FALSE(cpu.getFlags().isCarryFlag());
 }
 
 TEST(CPUGeneral, ADdwithCarry_AbY) {
@@ -73,7 +73,7 @@ TEST(CPUGeneral, ADdwithCarry_AbY) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x1f, cpu.getARegister());
-    EXPECT_FALSE(cpu.isCarryFlag());
+    EXPECT_FALSE(cpu.getFlags().isCarryFlag());
 }
 
 // LDA : LoaD Accumulator
@@ -83,7 +83,7 @@ TEST(CPUGeneral, LoaDAcc_I) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x08, cpu.getARegister());
-    EXPECT_FALSE(cpu.isNegativeFlag());
+    EXPECT_FALSE(cpu.getFlags().isNegativeFlag());
 }
 
 TEST(CPUGeneral, LDA_I_Negative) {
@@ -91,7 +91,7 @@ TEST(CPUGeneral, LDA_I_Negative) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getARegister());
-    EXPECT_TRUE(cpu.isNegativeFlag());
+    EXPECT_TRUE(cpu.getFlags().isNegativeFlag());
 }
 
 TEST(CPUGeneral, LoaDAcc_Ab) {
@@ -348,57 +348,57 @@ TEST(CPUGeneral, SToreY_ZX) {
 TEST(CPUGeneral, CLearCarry) {
     std::array<uint8_t, 2> mem = {CLearCarry, BReaK};
     auto cpu = CPU(0, mem, cycleCallback);
-    cpu.setCarryFlag(true);
+    cpu.getFlags().setCarryFlag(true);
     cpu.run();
-    EXPECT_FALSE(cpu.isCarryFlag());
+    EXPECT_FALSE(cpu.getFlags().isCarryFlag());
 }
 
 TEST(CPUGeneral, SEtCarry) {
     std::array<uint8_t, 2> mem = {SEtCarry, BReaK};
     auto cpu = CPU(0, mem, cycleCallback);
-    cpu.setCarryFlag(false);
+    cpu.getFlags().setCarryFlag(false);
     cpu.run();
-    EXPECT_TRUE(cpu.isCarryFlag());
+    EXPECT_TRUE(cpu.getFlags().isCarryFlag());
 }
 
 TEST(CPUGeneral, CLearDecimal) {
     std::array<uint8_t, 2> mem = {CLearDecimal, BReaK};
     auto cpu = CPU(0, mem, cycleCallback);
-    cpu.setDecimalFlag(true);
+    cpu.getFlags().setDecimalFlag(true);
     cpu.run();
-    EXPECT_FALSE(cpu.isDecimalFlag());
+    EXPECT_FALSE(cpu.getFlags().isDecimalFlag());
 }
 
 TEST(CPUGeneral, SEtDecimal) {
     std::array<uint8_t, 2> mem = {SEtDecimal, BReaK};
     auto cpu = CPU(0, mem, cycleCallback);
-    cpu.setDecimalFlag(false);
+    cpu.getFlags().setDecimalFlag(false);
     cpu.run();
-    EXPECT_TRUE(cpu.isDecimalFlag());
+    EXPECT_TRUE(cpu.getFlags().isDecimalFlag());
 }
 
 TEST(CPUGeneral, CLearinterrupt) {
     std::array<uint8_t, 2> mem = {CLearInterrupt, BReaK};
     auto cpu = CPU(0, mem, cycleCallback);
-    cpu.setInterruptDisableFlag(true);
+    cpu.getFlags().setInterruptDisableFlag(true);
     cpu.run();
-    EXPECT_FALSE(cpu.isInterruptDisableFlag());
+    EXPECT_FALSE(cpu.getFlags().isInterruptDisableFlag());
 }
 
 TEST(CPUGeneral, SEtInterrupt) {
     std::array<uint8_t, 2> mem = {SEtInterrupt, BReaK};
     auto cpu = CPU(0, mem, cycleCallback);
-    cpu.setInterruptDisableFlag(false);
+    cpu.getFlags().setInterruptDisableFlag(false);
     cpu.run();
-    EXPECT_TRUE(cpu.isInterruptDisableFlag());
+    EXPECT_TRUE(cpu.getFlags().isInterruptDisableFlag());
 }
 
 TEST(CPUGeneral, CLearoVerflow) {
     std::array<uint8_t, 2> mem = {CLearoVerflow, BReaK};
     auto cpu = CPU(0, mem, cycleCallback);
-    cpu.setOverflowFlag(true);
+    cpu.getFlags().setOverflowFlag(true);
     cpu.run();
-    EXPECT_FALSE(cpu.isOverflowFlag());
+    EXPECT_FALSE(cpu.getFlags().isOverflowFlag());
 }
 
 TEST(CPUGeneral, JuMP_Ab) {
@@ -468,7 +468,7 @@ TEST(CPUGeneral, DEcrementX) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x01, cpu.getXRegister());
-    EXPECT_FALSE(cpu.isZeroFlag());
+    EXPECT_FALSE(cpu.getFlags().isZeroFlag());
 }
 
 TEST(CPUGeneral, DEX_zeroflag) {
@@ -476,7 +476,7 @@ TEST(CPUGeneral, DEX_zeroflag) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x00, cpu.getXRegister());
-    EXPECT_TRUE(cpu.isZeroFlag());
+    EXPECT_TRUE(cpu.getFlags().isZeroFlag());
 }
 
 TEST(CPUGeneral, DEcrementY) {
@@ -491,7 +491,7 @@ TEST(CPUGeneral, DEY_zeroflag) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x00, cpu.getYRegister());
-    EXPECT_TRUE(cpu.isZeroFlag());
+    EXPECT_TRUE(cpu.getFlags().isZeroFlag());
 }
 
 TEST(CPUGeneral, DECrement_Z) {
@@ -556,44 +556,44 @@ TEST(CPUGeneral, SuBtractwithCarry_Z_simple) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x01, cpu.getARegister()); //carry flag is off
-    EXPECT_FALSE(cpu.isCarryFlag());
-    EXPECT_FALSE(cpu.isNegativeFlag());
-    EXPECT_FALSE(cpu.isZeroFlag());
-    EXPECT_FALSE(cpu.isOverflowFlag());
+    EXPECT_FALSE(cpu.getFlags().isCarryFlag());
+    EXPECT_FALSE(cpu.getFlags().isNegativeFlag());
+    EXPECT_FALSE(cpu.getFlags().isZeroFlag());
+    EXPECT_FALSE(cpu.getFlags().isOverflowFlag());
 }
 
 TEST(CPUGeneral, SuBtractwithCarry_Z_zero) {
     std::array<uint8_t, 6> mem = {LoaDAcc_I, 0x04, SuBtractwithCarry_Z, 0x05, BReaK, 0x04};
     auto cpu = CPU(0, mem, cycleCallback);
-    cpu.setCarryFlag(true);
+    cpu.getFlags().setCarryFlag(true);
     cpu.run();
     EXPECT_EQ(0x0, cpu.getARegister());
-    EXPECT_TRUE(cpu.isCarryFlag());
-    EXPECT_FALSE(cpu.isNegativeFlag());
-    EXPECT_TRUE(cpu.isZeroFlag());
-    EXPECT_FALSE(cpu.isOverflowFlag());
+    EXPECT_TRUE(cpu.getFlags().isCarryFlag());
+    EXPECT_FALSE(cpu.getFlags().isNegativeFlag());
+    EXPECT_TRUE(cpu.getFlags().isZeroFlag());
+    EXPECT_FALSE(cpu.getFlags().isOverflowFlag());
 }
 
 TEST(CPUGeneral, SuBtractwithCarry_Z_negative) {
     std::array<uint8_t, 6> mem = {LoaDAcc_I, 0x0, SuBtractwithCarry_Z, 0x05, BReaK, 0xff};
     auto cpu = CPU(0, mem, cycleCallback);
-    cpu.setCarryFlag(true);
+    cpu.getFlags().setCarryFlag(true);
     cpu.run();
     EXPECT_EQ(0x1, cpu.getARegister());
-    EXPECT_TRUE(cpu.isCarryFlag());
-    EXPECT_TRUE(cpu.isNegativeFlag());
-    EXPECT_FALSE(cpu.isZeroFlag());
-    EXPECT_FALSE(cpu.isOverflowFlag());
+    EXPECT_TRUE(cpu.getFlags().isCarryFlag());
+    EXPECT_TRUE(cpu.getFlags().isNegativeFlag());
+    EXPECT_FALSE(cpu.getFlags().isZeroFlag());
+    EXPECT_FALSE(cpu.getFlags().isOverflowFlag());
 }
 
 TEST(CPUGeneral, SuBtractwithCarry_Z) {
     std::array<uint8_t, 6> mem = {LoaDAcc_I, 0x0, SuBtractwithCarry_Z, 0x05, BReaK, 0xff};
     auto cpu = CPU(0, mem, cycleCallback);
-    cpu.setCarryFlag(true);
+    cpu.getFlags().setCarryFlag(true);
     cpu.run();
     EXPECT_EQ(0x1, cpu.getARegister());
-    EXPECT_TRUE(cpu.isCarryFlag());
-    EXPECT_TRUE(cpu.isNegativeFlag());
-    EXPECT_FALSE(cpu.isZeroFlag());
-    EXPECT_FALSE(cpu.isOverflowFlag());
+    EXPECT_TRUE(cpu.getFlags().isCarryFlag());
+    EXPECT_TRUE(cpu.getFlags().isNegativeFlag());
+    EXPECT_FALSE(cpu.getFlags().isZeroFlag());
+    EXPECT_FALSE(cpu.getFlags().isOverflowFlag());
 }

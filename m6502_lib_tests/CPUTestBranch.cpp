@@ -57,7 +57,7 @@ TEST(CPUBranch, BPL_if_negative) {
 TEST(CPUBranch, BCC_if_true) {
     std::array<uint8_t, 16> mem = {BranchonCarryClear, 0x02, LoaDY_I, 0x01, LoaDAcc_I, 0x01, 0x00};
     auto cpu = CPU(0, mem, cycleCallback);
-    cpu.setCarryFlag(true);
+    cpu.getFlags().setCarryFlag(true);
     cpu.run();
     EXPECT_EQ(0x01, cpu.getYRegister());
     EXPECT_EQ(0x01, cpu.getARegister());
@@ -66,7 +66,7 @@ TEST(CPUBranch, BCC_if_true) {
 TEST(CPUBranch, BCC_if_false) {
     std::array<uint8_t, 16> mem = {BranchonCarryClear, 0x02, LoaDY_I, 0x01, LoaDAcc_I, 0x01, 0x00};
     auto cpu = CPU(0, mem, cycleCallback);
-    cpu.setCarryFlag(false);
+    cpu.getFlags().setCarryFlag(false);
     cpu.run();
     EXPECT_EQ(0x00, cpu.getYRegister());
     EXPECT_EQ(0x01, cpu.getARegister());
@@ -75,7 +75,7 @@ TEST(CPUBranch, BCC_if_false) {
 TEST(CPUBranch, BCS_if_true) {
     std::array<uint8_t, 16> mem = {BranchonCarrySet, 0x02, LoaDY_I, 0x01, LoaDAcc_I, 0x01, 0x00};
     auto cpu = CPU(0, mem, cycleCallback);
-    cpu.setCarryFlag(true);
+    cpu.getFlags().setCarryFlag(true);
     cpu.run();
     EXPECT_EQ(0x00, cpu.getYRegister());
     EXPECT_EQ(0x01, cpu.getARegister());
@@ -84,7 +84,7 @@ TEST(CPUBranch, BCS_if_true) {
 TEST(CPUBranch, BCS_if_false) {
     std::array<uint8_t, 16> mem = {BranchonCarrySet, 0x02, LoaDY_I, 0x01, LoaDAcc_I, 0x01, 0x00};
     auto cpu = CPU(0, mem, cycleCallback);
-    cpu.setCarryFlag(false);
+    cpu.getFlags().setCarryFlag(false);
     cpu.run();
     EXPECT_EQ(0x01, cpu.getYRegister());
     EXPECT_EQ(0x01, cpu.getARegister());
@@ -93,7 +93,7 @@ TEST(CPUBranch, BCS_if_false) {
 TEST(CPUBranch, BMI_if_true) {
     std::array<uint8_t, 16> mem = {BranchonMInus, 0x02, LoaDY_I, 0x01, LoaDAcc_I, 0x01, 0x00};
     auto cpu = CPU(0, mem, cycleCallback);
-    cpu.setNegativeFlag(true);
+    cpu.getFlags().setNegativeFlag(true);
     cpu.run();
     EXPECT_EQ(0x00, cpu.getYRegister());
     EXPECT_EQ(0x01, cpu.getARegister());
@@ -102,7 +102,7 @@ TEST(CPUBranch, BMI_if_true) {
 TEST(CPUBranch, BMI_if_false) {
     std::array<uint8_t, 16> mem = {BranchonMInus, 0x02, LoaDY_I, 0x01, LoaDAcc_I, 0x01, 0x00};
     auto cpu = CPU(0, mem, cycleCallback);
-    cpu.setNegativeFlag(false);
+    cpu.getFlags().setNegativeFlag(false);
     cpu.run();
     EXPECT_EQ(0x01, cpu.getYRegister());
     EXPECT_EQ(0x01, cpu.getARegister());
@@ -111,7 +111,7 @@ TEST(CPUBranch, BMI_if_false) {
 TEST(CPUBranch, BVC_if_false) {
     std::array<uint8_t, 16> mem = {BranchonoVerflowClear, 0x02, LoaDY_I, 0x01, LoaDAcc_I, 0x01, 0x00};
     auto cpu = CPU(0, mem, cycleCallback);
-    cpu.setOverflowFlag(false);
+    cpu.getFlags().setOverflowFlag(false);
     cpu.run();
     EXPECT_EQ(0x00, cpu.getYRegister());
     EXPECT_EQ(0x01, cpu.getARegister());
@@ -120,7 +120,7 @@ TEST(CPUBranch, BVC_if_false) {
 TEST(CPUBranch, BVC_if_true) {
     std::array<uint8_t, 16> mem = {BranchonoVerflowClear, 0x02, LoaDY_I, 0x01, LoaDAcc_I, 0x01, 0x00};
     auto cpu = CPU(0, mem, cycleCallback);
-    cpu.setOverflowFlag(true);
+    cpu.getFlags().setOverflowFlag(true);
     cpu.run();
     EXPECT_EQ(0x01, cpu.getYRegister());
     EXPECT_EQ(0x01, cpu.getARegister());
@@ -129,7 +129,7 @@ TEST(CPUBranch, BVC_if_true) {
 TEST(CPUBranch, BVS_if_false) {
     std::array<uint8_t, 16> mem = {BranchonoVerflowSet, 0x02, LoaDY_I, 0x01, LoaDAcc_I, 0x01, 0x00};
     auto cpu = CPU(0, mem, cycleCallback);
-    cpu.setOverflowFlag(false);
+    cpu.getFlags().setOverflowFlag(false);
     cpu.run();
     EXPECT_EQ(0x01, cpu.getYRegister());
     EXPECT_EQ(0x01, cpu.getARegister());
@@ -138,7 +138,7 @@ TEST(CPUBranch, BVS_if_false) {
 TEST(CPUBranch, BVS_if_true) {
     std::array<uint8_t, 16> mem = {BranchonoVerflowSet, 0x02, LoaDY_I, 0x01, LoaDAcc_I, 0x01, 0x00};
     auto cpu = CPU(0, mem, cycleCallback);
-    cpu.setOverflowFlag(true);
+    cpu.getFlags().setOverflowFlag(true);
     cpu.run();
     EXPECT_EQ(0x00, cpu.getYRegister());
     EXPECT_EQ(0x01, cpu.getARegister());
