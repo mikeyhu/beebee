@@ -12,6 +12,7 @@ add_executable(m6502_lib_tests
         CPUTestCompare.cpp
         CPUTestBranch.cpp
         CPUTestStack.cpp
+        MemoryTest.cpp
         Helpers.cpp)
 
 target_link_libraries(m6502_lib_tests m6502_lib)

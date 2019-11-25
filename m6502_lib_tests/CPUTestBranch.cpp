@@ -16,8 +16,8 @@ TEST(CPUBranch, BNE_backwards) {
                                    0x00, 0x00, 0x00};
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
-    EXPECT_EQ(0x03, cpu.getMemory()[14]);
-    EXPECT_EQ(0x03, cpu.getMemory()[15]);
+    EXPECT_EQ(0x03, cpu.getMemoryAt(14));
+    EXPECT_EQ(0x03, cpu.getMemoryAt(15));
 }
 
 TEST(CPUBranch, BNE_forwards) {

@@ -248,7 +248,7 @@ TEST(CPUGeneral, SToreAcc_Ab) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getARegister());
-    EXPECT_EQ(0x80, cpu.getMemory()[6]);
+    EXPECT_EQ(0x80, cpu.getMemoryAt(6));
 }
 
 TEST(CPUGeneral, SToreAcc_AbX) {
@@ -256,7 +256,7 @@ TEST(CPUGeneral, SToreAcc_AbX) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getARegister());
-    EXPECT_EQ(0x80, cpu.getMemory()[8]);
+    EXPECT_EQ(0x80, cpu.getMemoryAt(8));
 }
 
 TEST(CPUGeneral, SToreAcc_AbY) {
@@ -264,7 +264,7 @@ TEST(CPUGeneral, SToreAcc_AbY) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getARegister());
-    EXPECT_EQ(0x80, cpu.getMemory()[8]);
+    EXPECT_EQ(0x80, cpu.getMemoryAt(8));
 }
 
 TEST(CPUGeneral, SToreAcc_Z) {
@@ -272,7 +272,7 @@ TEST(CPUGeneral, SToreAcc_Z) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getARegister());
-    EXPECT_EQ(0x80, cpu.getMemory()[5]);
+    EXPECT_EQ(0x80, cpu.getMemoryAt(5));
 }
 
 TEST(CPUGeneral, SToreAcc_ZX) {
@@ -280,7 +280,7 @@ TEST(CPUGeneral, SToreAcc_ZX) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getARegister());
-    EXPECT_EQ(0x80, cpu.getMemory()[7]);
+    EXPECT_EQ(0x80, cpu.getMemoryAt(7));
 }
 
 TEST(CPUGeneral, SToreAcc_IndirIndex) {
@@ -288,7 +288,7 @@ TEST(CPUGeneral, SToreAcc_IndirIndex) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getARegister());
-    EXPECT_EQ(0x80, cpu.getMemory()[7]);
+    EXPECT_EQ(0x80, cpu.getMemoryAt(7));
 }
 
 TEST(CPUGeneral, SToreAcc_IndexIndir) {
@@ -296,7 +296,7 @@ TEST(CPUGeneral, SToreAcc_IndexIndir) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getARegister());
-    EXPECT_EQ(0x80, cpu.getMemory()[7]);
+    EXPECT_EQ(0x80, cpu.getMemoryAt(7));
 }
 
 // STX : STore Xregister
@@ -305,21 +305,21 @@ TEST(CPUGeneral, SToreX_Ab) {
     std::array<uint8_t, 7> mem = {LoaDX_I, 0x80, SToreX_Ab, 0x06, 0x00, BReaK, 0x00};
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
-    EXPECT_EQ(0x80, cpu.getMemory()[6]);
+    EXPECT_EQ(0x80, cpu.getMemoryAt(6));
 }
 
 TEST(CPUGeneral, SToreX_Z) {
     std::array<uint8_t, 6> mem = {LoaDX_I, 0x80, SToreX_Z, 0x05, BReaK, 0x00};
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
-    EXPECT_EQ(0x80, cpu.getMemory()[5]);
+    EXPECT_EQ(0x80, cpu.getMemoryAt(5));
 }
 
 TEST(CPUGeneral, SToreX_ZY) {
     std::array<uint8_t, 8> mem = {LoaDX_I, 0x80, LoaDY_I, 0x02, SToreX_ZY, 0x05, BReaK, 0x00};
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
-    EXPECT_EQ(0x80, cpu.getMemory()[7]);
+    EXPECT_EQ(0x80, cpu.getMemoryAt(7));
 }
 
 // STY : STore Yregister
@@ -328,21 +328,21 @@ TEST(CPUGeneral, SToreY_Ab) {
     std::array<uint8_t, 7> mem = {LoaDY_I, 0x80, SToreY_Ab, 0x06, 0x00, BReaK, 0x00};
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
-    EXPECT_EQ(0x80, cpu.getMemory()[6]);
+    EXPECT_EQ(0x80, cpu.getMemoryAt(6));
 }
 
 TEST(CPUGeneral, SToreY_Z) {
     std::array<uint8_t, 6> mem = {LoaDY_I, 0x80, SToreY_Z, 0x05, BReaK, 0x00};
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
-    EXPECT_EQ(0x80, cpu.getMemory()[5]);
+    EXPECT_EQ(0x80, cpu.getMemoryAt(5));
 }
 
 TEST(CPUGeneral, SToreY_ZX) {
     std::array<uint8_t, 8> mem = {LoaDY_I, 0x80, LoaDX_I, 0x02, SToreY_ZX, 0x05, BReaK, 0x00};
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
-    EXPECT_EQ(0x80, cpu.getMemory()[7]);
+    EXPECT_EQ(0x80, cpu.getMemoryAt(7));
 }
 
 TEST(CPUGeneral, CLearCarry) {
@@ -437,28 +437,28 @@ TEST(CPUGeneral, INCrement_Z) {
     std::array<uint8_t, 4> mem = {INCrement_Z, 0x03, BReaK, 0x01};
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
-    EXPECT_EQ(0x02, cpu.getMemory()[3]);
+    EXPECT_EQ(0x02, cpu.getMemoryAt(3));
 }
 
 TEST(CPUGeneral, INCrement_ZX) {
     std::array<uint8_t, 6> mem = {LoaDX_I, 0x02, INCrement_ZX, 0x03, BReaK, 0x01};
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
-    EXPECT_EQ(0x02, cpu.getMemory()[5]);
+    EXPECT_EQ(0x02, cpu.getMemoryAt(5));
 }
 
 TEST(CPUGeneral, INCrement_Ab) {
     std::array<uint8_t, 5> mem = {INCrement_Ab, 0x04, 0x00, BReaK, 0x01};
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
-    EXPECT_EQ(0x02, cpu.getMemory()[4]);
+    EXPECT_EQ(0x02, cpu.getMemoryAt(4));
 }
 
 TEST(CPUGeneral, INCrement_AbX) {
     std::array<uint8_t, 7> mem = {LoaDX_I, 0x02, INCrement_AbX, 0x04, 0x00, BReaK, 0x01};
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
-    EXPECT_EQ(0x02, cpu.getMemory()[6]);
+    EXPECT_EQ(0x02, cpu.getMemoryAt(6));
 }
 
 // DEcrement
@@ -498,28 +498,28 @@ TEST(CPUGeneral, DECrement_Z) {
     std::array<uint8_t, 4> mem = {DECrement_Z, 0x03, BReaK, 0x05};
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
-    EXPECT_EQ(0x04, cpu.getMemory()[3]);
+    EXPECT_EQ(0x04, cpu.getMemoryAt(3));
 }
 
 TEST(CPUGeneral, DECrement_ZX) {
     std::array<uint8_t, 6> mem = {LoaDX_I, 0x02, DECrement_ZX, 0x03, BReaK, 0x05};
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
-    EXPECT_EQ(0x04, cpu.getMemory()[5]);
+    EXPECT_EQ(0x04, cpu.getMemoryAt(5));
 }
 
 TEST(CPUGeneral, DECrement_Ab) {
     std::array<uint8_t, 5> mem = {DECrement_Ab, 0x04, 0x00, BReaK, 0x02};
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
-    EXPECT_EQ(0x01, cpu.getMemory()[4]);
+    EXPECT_EQ(0x01, cpu.getMemoryAt(4));
 }
 
 TEST(CPUGeneral, DECrement_AbX) {
     std::array<uint8_t, 7> mem = {LoaDX_I, 0x02, DECrement_AbX, 0x04, 0x00, BReaK, 0x02};
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
-    EXPECT_EQ(0x01, cpu.getMemory()[6]);
+    EXPECT_EQ(0x01, cpu.getMemoryAt(6));
 }
 // T Transfer
 

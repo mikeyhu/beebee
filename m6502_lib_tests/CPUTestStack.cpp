@@ -21,7 +21,7 @@ TEST(CPUStack, PusHAcc) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0xfe, cpu.getStackPointer());
-    EXPECT_EQ(0x01, cpu.getMemory()[0x1ff]);
+    EXPECT_EQ(0x01, cpu.getMemoryAt(0x1ff));
 }
 // PLA : PuLl Accumulator
 TEST(CPUStack, PuLlAcc) {
@@ -30,7 +30,7 @@ TEST(CPUStack, PuLlAcc) {
     cpu.run();
     EXPECT_EQ(0xff, cpu.getStackPointer());
     EXPECT_EQ(0x01, cpu.getARegister());
-    EXPECT_EQ(0x01, cpu.getMemory()[0x1ff]);
+    EXPECT_EQ(0x01, cpu.getMemoryAt(0x1ff));
 }
 
 TEST(CPUStack, TransferStacktoX) {
@@ -64,8 +64,8 @@ TEST(CPUStack, JumptoSubRoutine_Ab) {
     cpu.run();
     EXPECT_EQ(0x00, cpu.getARegister());
     EXPECT_EQ(0xfd, cpu.getStackPointer());
-    EXPECT_EQ(0x00, cpu.getMemory()[0x1ff]);
-    EXPECT_EQ(0x05, cpu.getMemory()[0x1fe]);
+    EXPECT_EQ(0x00, cpu.getMemoryAt(0x1ff));
+    EXPECT_EQ(0x05, cpu.getMemoryAt(0x1fe));
 }
 
 TEST(CPUStack, ReTurnfromSubroutine) {

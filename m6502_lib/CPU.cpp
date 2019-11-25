@@ -12,6 +12,8 @@
 
 #endif
 
+#include "Memory.cpp"
+
 #include "OpLog.cpp"
 
 template<std::size_t SIZE>
@@ -33,7 +35,7 @@ class CPU {
     bool overflowFlag = false;
     bool negativeFlag = false;
     std::function<void()> cycleCallback;
-    std::array<uint8_t, SIZE> memory;
+    Memory<SIZE>* memory;
     uint16_t breakLocation = 0;
     bool doBreak = false;
 
@@ -44,11 +46,11 @@ class CPU {
     uint16_t readUInt16() {
         auto pcLow = programCounter++;
         auto pcHigh = programCounter++;
-        return toUInt16(memory[pcLow], memory[pcHigh]);
+        return toUInt16(memory->getValue(pcLow), memory->getValue(pcHigh));
     }
 
     uint8_t readUInt8() {
-        return memory[programCounter++];
+        return memory->getValue(programCounter++);
     }
 
     OpCode readOpCode() {
@@ -57,13 +59,13 @@ class CPU {
     }
 
     uint16_t read16From(uint16_t location) {
-        uint8_t upper = memory[location];
-        uint8_t lower = memory[location + 1];
+        uint8_t upper = memory->getValue(location);
+        uint8_t lower = memory->getValue(location + 1);
         return toUInt16(upper, lower);
     }
 
     void pushStack8(uint8_t value) {
-        memory[STACK_START + stackPointer--] = value;
+        memory->setValue(STACK_START + stackPointer--, value);
     }
 
     void pushStack16(uint16_t value) {
@@ -74,7 +76,7 @@ class CPU {
     }
 
     uint8_t popStack8() {
-        return memory[STACK_START + ++stackPointer];
+        return memory->getValue(STACK_START + ++stackPointer);
     }
 
     uint16_t popStack16() {
@@ -198,7 +200,7 @@ class CPU {
     }
 
     void opAddWithCarry(uint16_t location) {
-        opAddWithCarry(memory[location]);
+        opAddWithCarry(memory->getValue(location));
     }
 
     void opArithmeticShiftLeft(bool _) {
@@ -208,11 +210,11 @@ class CPU {
     }
 
     void opArithmeticShiftLeft(uint16_t location) {
-        auto mem = memory[location];
+        auto mem = memory->getValue(location);
         auto setTo = mem << 1u;
         setCarryFlag(setTo > 0xff);
         setFlagsBasedOnValue(setTo);
-        memory[location] = setTo;
+        memory->setValue(location, setTo);
     }
 
     void opAnd(uint8_t value) {
@@ -220,11 +222,11 @@ class CPU {
     }
 
     void opAnd(uint16_t location) {
-        opAnd(memory[location]);
+        opAnd(memory->getValue(location));
     }
 
     void opBit(uint16_t location) {
-        auto mem = memory[location];
+        auto mem = memory->getValue(location);
 #ifndef NDEBUG
         std::cout << std::hex << "BIT A:" << (int) ARegister << " ZP:" << (int) mem << std::endl;
 #endif
@@ -297,11 +299,11 @@ class CPU {
     }
 
     void opCompareAcc(uint16_t location) {
-        compareRegisterTo(ARegister, memory[location]);
+        compareRegisterTo(ARegister, memory->getValue(location));
     }
 
     void opCompareX(uint16_t location) {
-        compareRegisterTo(XRegister, memory[location]);
+        compareRegisterTo(XRegister, memory->getValue(location));
     }
 
     void opCompareX(uint8_t value) {
@@ -313,14 +315,14 @@ class CPU {
     }
 
     void opCompareY(uint16_t location) {
-        compareRegisterTo(YRegister, memory[location]);
+        compareRegisterTo(YRegister, memory->getValue(location));
     }
 
     void opDecrement(uint16_t location) {
-        auto val = memory[location];
+        auto val = memory->getValue(location);
         val = val - 1;
         setFlagsBasedOnValue(val);
-        memory[location] = val;
+        memory->setValue(location, val);
     }
 
     void opDecrementX(bool _) {
@@ -336,14 +338,14 @@ class CPU {
     }
 
     void opExclusiveOR(uint16_t location) {
-        opExclusiveOR(memory[location]);
+        opExclusiveOR(memory->getValue(location));
     }
 
     void opIncrement(uint16_t location) {
-        auto val = memory[location];
+        auto val = memory->getValue(location);
         val = val + 1;
         setFlagsBasedOnValue(val);
-        memory[location] = val;
+        memory->setValue(location, val);
     }
 
     void opIncrementX(bool _) {
@@ -368,11 +370,11 @@ class CPU {
     }
 
     void opORwithAcc(uint16_t location) {
-        opORwithAcc(memory[location]);
+        opORwithAcc(memory->getValue(location));
     }
 
     void opLoadAcc(uint16_t location) {
-        setARegister(memory[location]);
+        setARegister(memory->getValue(location));
     }
 
     void opLoadAcc(uint8_t value) {
@@ -384,7 +386,7 @@ class CPU {
     }
 
     void opLoadX(uint16_t location) {
-        setXRegister(memory[location]);
+        setXRegister(memory->getValue(location));
     }
 
     void opLoadY(uint8_t value) {
@@ -392,7 +394,7 @@ class CPU {
     }
 
     void opLoadY(uint16_t location) {
-        setYRegister(memory[location]);
+        setYRegister(memory->getValue(location));
     }
 
     void opNoop(bool _) {
@@ -406,11 +408,11 @@ class CPU {
     }
 
     void opLogicalShiftRight(uint16_t location) {
-        auto mem = memory[location];
+        auto mem = memory->getValue(location);
         auto setTo = mem >> 1u;
         setCarryFlag(mem & 1u);
         setFlagsBasedOnValue(setTo);
-        memory[location] = setTo;
+        memory->setValue(location, setTo);
     }
 
     void opPushProcessorStatus(bool _) {
@@ -447,11 +449,11 @@ class CPU {
     }
 
     void opRotateLeft(uint16_t location) {
-        auto mem = memory[location];
+        auto mem = memory->getValue(location);
         auto setTo = mem << 1u | carryFlag;
         setCarryFlag(mem & 0x80u);
         setFlagsBasedOnValue(setTo);
-        memory[location] = setTo;
+        memory->setValue(location, setTo);
     }
 
     void opRotateRight(bool _) {
@@ -461,11 +463,11 @@ class CPU {
     }
 
     void opRotateRight(uint16_t location) {
-        auto mem = memory[location];
+        auto mem = memory->getValue(location);
         auto setTo = mem >> 1u | (carryFlag << 7u);
         setCarryFlag(mem & 0x1u);
         setFlagsBasedOnValue(setTo);
-        memory[location] = setTo;
+        memory->setValue(location, setTo);
     }
 
     void opSetCarry(bool _) {
@@ -481,7 +483,7 @@ class CPU {
     }
 
     void opSubtractWithCarry(uint16_t location) {
-        auto mem = memory[location];
+        auto mem = memory->getValue(location);
         uint8_t sum = ARegister - mem - !isCarryFlag();
         setFlagsBasedOnValue(sum);
         if (mem > ARegister) {
@@ -494,15 +496,15 @@ class CPU {
     }
 
     void opStoreAcc(uint16_t location) {
-        memory[location] = ARegister;
+        memory->setValue(location, ARegister);
     }
 
     void opStoreX(uint16_t location) {
-        memory[location] = XRegister;
+        memory->setValue(location, XRegister);
     }
 
     void opStoreY(uint16_t location) {
-        memory[location] = YRegister;
+        memory->setValue(location, YRegister);
     }
 
     void opTransferAtoX(bool _) {
@@ -530,9 +532,16 @@ class CPU {
     }
 
 public:
-    CPU(uint16_t programCounter, std::array<uint8_t, SIZE> mem, std::function<void()> cycle)
+    CPU(uint16_t programCounter, Memory<SIZE> mem, std::function<void()> cycle)
             : memory(mem),
               cycleCallback(cycle) {
+        this->programCounter = programCounter;
+        this->previousProgramCounter = programCounter;
+    }
+
+    CPU(uint16_t programCounter, std::array<uint8_t, SIZE> mem, std::function<void()> cycle)
+            : cycleCallback(cycle) {
+        this->memory = new Memory(mem);
         this->programCounter = programCounter;
         this->previousProgramCounter = programCounter;
     }
@@ -679,8 +688,8 @@ public:
         CPU::interruptDisableFlag = interruptDisableFlag;
     }
 
-    const std::array<uint8_t, SIZE> &getMemory() const {
-        return memory;
+    const uint8_t getMemoryAt(uint16_t location) const {
+        return memory->getValue(location);
     }
 
     void printState(OpLog opLog) {
@@ -697,8 +706,8 @@ public:
                   << " Z;" << zeroFlag
                   << " C;" << carryFlag;
         for (int i = stackPointer; i <= 0xff; i++) {
-            std::cout << " [" << i << ":" << (int) (uint8_t) memory[0x100 + i] << "]";
+            std::cout << " [" << i << ":" << (int) (uint8_t) memory->getValue(0x100 + i) << "]";
         }
-        std::cout << " testcase:" << (int) (uint8_t) memory[0x200] << std::endl;
+        std::cout << " testcase:" << (int) (uint8_t) memory->getValue(0x200) << std::endl;
     }
 };

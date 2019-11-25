@@ -4,6 +4,7 @@ set(HEADER_FILES )
 
 set(SOURCE_FILES
         CPU.cpp
+        Memory.cpp
         OpLog.cpp
         OpCode.cpp
         OpCodeMacro.cpp
