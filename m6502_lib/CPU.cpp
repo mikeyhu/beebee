@@ -3,7 +3,6 @@
 #include <array>
 #include <iostream>
 #include <functional>
-#include <map>
 
 #ifndef CLASS_OPCODE
 #define CLASS_OPCODE
@@ -12,6 +11,11 @@
 
 #endif
 
+#ifndef BEEBEE_UTILITIES
+#define BEEBEE_UTILITIES
+#include "Utilities.cpp"
+
+#endif
 #include "Memory.cpp"
 
 #include "OpLog.cpp"
@@ -39,16 +43,6 @@ class CPU {
     uint16_t breakLocation = 0;
     bool doBreak = false;
 
-    uint16_t toUInt16(uint8_t a, uint8_t b) {
-        return b << 8u | a;
-    }
-
-    uint16_t readUInt16() {
-        auto pcLow = programCounter++;
-        auto pcHigh = programCounter++;
-        return toUInt16(memory->getValue(pcLow), memory->getValue(pcHigh));
-    }
-
     uint8_t readUInt8() {
         return memory->getValue(programCounter++);
     }
@@ -56,12 +50,6 @@ class CPU {
     OpCode readOpCode() {
         auto opCode = (OpCode) readUInt8();
         return opCode;
-    }
-
-    uint16_t read16From(uint16_t location) {
-        uint8_t upper = memory->getValue(location);
-        uint8_t lower = memory->getValue(location + 1);
-        return toUInt16(upper, lower);
     }
 
     void pushStack8(uint8_t value) {
@@ -153,7 +141,9 @@ class CPU {
     }
 
     uint16_t Ab() {
-        return readUInt16();
+        auto pcLow = programCounter++;
+        programCounter++;
+        return memory->get16Value(pcLow);
     }
 
     uint16_t AbX() {
@@ -169,17 +159,17 @@ class CPU {
     }
 
     uint16_t INDIR() {
-        return read16From(Ab());
+        return memory->get16Value(Ab());
     }
 
     uint16_t IndexIndir() {
         auto zp = (Z() + XRegister) % 0x100;
-        return read16From(zp);
+        return memory->get16Value(zp);
     }
 
     uint16_t IndirIndex() {
         auto zp = readUInt8();
-        auto loc = read16From(zp);
+        auto loc = memory->get16Value(zp);
         return loc + YRegister;
     }
 
@@ -273,7 +263,7 @@ class CPU {
             pushStack16(programCounter + 1);
             breakCommandFlag = true;
             pushStack8(flagsAsInt());
-            programCounter = read16From(breakLocation);
+            programCounter = memory->get16Value(breakLocation);
         }
         doBreak = true;
     }
