@@ -17,7 +17,7 @@
 
 #endif
 #include "Memory.cpp"
-#include "Flags.cpp"
+#include "CPUState.cpp"
 #include "OpLog.cpp"
 
 template<std::size_t SIZE>
@@ -31,7 +31,7 @@ class CPU {
     uint8_t stackPointer = 0xff;
     uint16_t programCounter;
     uint16_t previousProgramCounter;
-    Flags flags = Flags();
+    CPUState flags = CPUState();
     std::function<void()> cycleCallback;
     Memory<SIZE>* memory;
     uint16_t breakLocation = 0;
@@ -591,7 +591,7 @@ public:
         return breakLocation;
     }
 
-    Flags &getFlags() {
+    CPUState &getFlags() {
         return flags;
     }
 

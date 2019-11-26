@@ -2,7 +2,7 @@
 #include <string>
 #include <sstream>
 
-class Flags {
+class CPUState {
     bool carryFlag = false;
     bool zeroFlag = false;
     bool interruptDisableFlag = false;
@@ -13,14 +13,14 @@ class Flags {
 
 
 public:
-    Flags() {}
+    CPUState() {}
 
     bool isCarryFlag() const {
         return carryFlag;
     }
 
     void setCarryFlag(bool carryFlag) {
-        Flags::carryFlag = carryFlag;
+        CPUState::carryFlag = carryFlag;
     }
 
     bool isZeroFlag() const {
@@ -28,7 +28,7 @@ public:
     }
 
     void setZeroFlag(bool zeroFlag) {
-        Flags::zeroFlag = zeroFlag;
+        CPUState::zeroFlag = zeroFlag;
     }
 
     bool isInterruptDisableFlag() const {
@@ -36,7 +36,7 @@ public:
     }
 
     void setInterruptDisableFlag(bool interruptDisableFlag) {
-        Flags::interruptDisableFlag = interruptDisableFlag;
+        CPUState::interruptDisableFlag = interruptDisableFlag;
     }
 
     bool isBreakCommandFlag() const {
@@ -44,7 +44,7 @@ public:
     }
 
     void setBreakCommandFlag(bool breakCommandFlag) {
-        Flags::breakCommandFlag = breakCommandFlag;
+        CPUState::breakCommandFlag = breakCommandFlag;
     }
 
     bool isDecimalFlag() const {
@@ -52,7 +52,7 @@ public:
     }
 
     void setDecimalFlag(bool decimalFlag) {
-        Flags::decimalFlag = decimalFlag;
+        CPUState::decimalFlag = decimalFlag;
     }
 
     bool isOverflowFlag() const {
@@ -60,7 +60,7 @@ public:
     }
 
     void setOverflowFlag(bool overflowFlag) {
-        Flags::overflowFlag = overflowFlag;
+        CPUState::overflowFlag = overflowFlag;
     }
 
     bool isNegativeFlag() const {
@@ -68,7 +68,7 @@ public:
     }
 
     void setNegativeFlag(bool negativeFlag) {
-        Flags::negativeFlag = negativeFlag;
+        CPUState::negativeFlag = negativeFlag;
     }
 
     uint8_t flagsAsInt() {
