@@ -168,8 +168,12 @@ public:
         return previousProgramCounter;
     }
 
-    void setPreviousProgramCounter(uint16_t previousProgramCounter) {
-        CPUState::previousProgramCounter = previousProgramCounter;
+    void setPreviousProgramCounterFromPC() {
+        previousProgramCounter = programCounter;
+    }
+
+    bool areProgramCountersEqual() {
+        return previousProgramCounter == programCounter;
     }
 };
 

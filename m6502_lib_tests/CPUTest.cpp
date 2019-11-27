@@ -17,7 +17,7 @@ TEST(CPUGeneral, FoundBRK) {
     cpu.setBreakLocation(0x01);
     cpu.run();
     EXPECT_TRUE(cpu.getCPUState().isBreakCommandFlag());
-    EXPECT_EQ(0x201, cpu.getProgramCounter());
+    EXPECT_EQ(0x201, cpu.getCPUState().getProgramCounter());
 }
 
 // ADC : ADd with Carry
@@ -111,7 +111,7 @@ TEST(CPUGeneral, LoaDAcc_Ab) {
     auto cpu = CPU(0, memory, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getCPUState().getARegister());
-    EXPECT_EQ(0x04, cpu.getProgramCounter());
+    EXPECT_EQ(0x04, cpu.getCPUState().getProgramCounter());
 }
 
 TEST(CPUGeneral, LoaDAcc_AbX) {
@@ -120,7 +120,7 @@ TEST(CPUGeneral, LoaDAcc_AbX) {
     auto cpu = CPU(0, memory, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getCPUState().getARegister());
-    EXPECT_EQ(0x06, cpu.getProgramCounter());
+    EXPECT_EQ(0x06, cpu.getCPUState().getProgramCounter());
 }
 
 TEST(CPUGeneral, LoaDAcc_AbY) {
@@ -129,7 +129,7 @@ TEST(CPUGeneral, LoaDAcc_AbY) {
     auto cpu = CPU(0, memory, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getCPUState().getARegister());
-    EXPECT_EQ(0x06, cpu.getProgramCounter());
+    EXPECT_EQ(0x06, cpu.getCPUState().getProgramCounter());
 }
 
 TEST(CPUGeneral, LoaDAcc_Z) {
@@ -138,7 +138,7 @@ TEST(CPUGeneral, LoaDAcc_Z) {
     auto cpu = CPU(0, memory, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getCPUState().getARegister());
-    EXPECT_EQ(0x03, cpu.getProgramCounter());
+    EXPECT_EQ(0x03, cpu.getCPUState().getProgramCounter());
 }
 
 TEST(CPUGeneral, LoaDAcc_ZX) {
@@ -147,7 +147,7 @@ TEST(CPUGeneral, LoaDAcc_ZX) {
     auto cpu = CPU(0, memory, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getCPUState().getARegister());
-    EXPECT_EQ(0x05, cpu.getProgramCounter());
+    EXPECT_EQ(0x05, cpu.getCPUState().getProgramCounter());
 }
 
 TEST(CPUGeneral, LoaDAcc_ZX_wraparound) {
@@ -156,7 +156,7 @@ TEST(CPUGeneral, LoaDAcc_ZX_wraparound) {
     auto cpu = CPU(0, memory, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getCPUState().getARegister());
-    EXPECT_EQ(0x05, cpu.getProgramCounter());
+    EXPECT_EQ(0x05, cpu.getCPUState().getProgramCounter());
 }
 
 TEST(CPUGeneral, LoaDAcc_IndirIndex) {
@@ -165,7 +165,7 @@ TEST(CPUGeneral, LoaDAcc_IndirIndex) {
     auto cpu = CPU(0, memory, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getCPUState().getARegister());
-    EXPECT_EQ(0x05, cpu.getProgramCounter());
+    EXPECT_EQ(0x05, cpu.getCPUState().getProgramCounter());
 }
 
 TEST(CPUGeneral, LoaDAcc_IndexIndir) {
@@ -174,7 +174,7 @@ TEST(CPUGeneral, LoaDAcc_IndexIndir) {
     auto cpu = CPU(0, memory, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getCPUState().getARegister());
-    EXPECT_EQ(0x05, cpu.getProgramCounter());
+    EXPECT_EQ(0x05, cpu.getCPUState().getProgramCounter());
 }
 
 
@@ -194,7 +194,7 @@ TEST(CPUGeneral, LoaDX_Ab) {
     auto cpu = CPU(0, memory, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getCPUState().getXRegister());
-    EXPECT_EQ(0x04, cpu.getProgramCounter());
+    EXPECT_EQ(0x04, cpu.getCPUState().getProgramCounter());
 }
 
 TEST(CPUGeneral, LoaDX_AbY) {
@@ -203,7 +203,7 @@ TEST(CPUGeneral, LoaDX_AbY) {
     auto cpu = CPU(0, memory, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getCPUState().getXRegister());
-    EXPECT_EQ(0x06, cpu.getProgramCounter());
+    EXPECT_EQ(0x06, cpu.getCPUState().getProgramCounter());
 }
 
 TEST(CPUGeneral, LoaDX_Z) {
@@ -212,7 +212,7 @@ TEST(CPUGeneral, LoaDX_Z) {
     auto cpu = CPU(0, memory, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getCPUState().getXRegister());
-    EXPECT_EQ(0x03, cpu.getProgramCounter());
+    EXPECT_EQ(0x03, cpu.getCPUState().getProgramCounter());
 }
 
 TEST(CPUGeneral, LoaDX_ZY) {
@@ -221,7 +221,7 @@ TEST(CPUGeneral, LoaDX_ZY) {
     auto cpu = CPU(0, memory, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getCPUState().getXRegister());
-    EXPECT_EQ(0x05, cpu.getProgramCounter());
+    EXPECT_EQ(0x05, cpu.getCPUState().getProgramCounter());
 }
 
 // LDY : LoaD Yregister
@@ -240,7 +240,7 @@ TEST(CPUGeneral, LoaDY_Ab) {
     auto cpu = CPU(0, memory, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getCPUState().getYRegister());
-    EXPECT_EQ(0x04, cpu.getProgramCounter());
+    EXPECT_EQ(0x04, cpu.getCPUState().getProgramCounter());
 }
 
 TEST(CPUGeneral, LoaDY_AbX) {
@@ -249,7 +249,7 @@ TEST(CPUGeneral, LoaDY_AbX) {
     auto cpu = CPU(0, memory, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getCPUState().getYRegister());
-    EXPECT_EQ(0x06, cpu.getProgramCounter());
+    EXPECT_EQ(0x06, cpu.getCPUState().getProgramCounter());
 }
 
 TEST(CPUGeneral, LoaDY_Z) {
@@ -258,7 +258,7 @@ TEST(CPUGeneral, LoaDY_Z) {
     auto cpu = CPU(0, memory, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getCPUState().getYRegister());
-    EXPECT_EQ(0x03, cpu.getProgramCounter());
+    EXPECT_EQ(0x03, cpu.getCPUState().getProgramCounter());
 }
 
 TEST(CPUGeneral, LoaDY_ZX) {
@@ -267,7 +267,7 @@ TEST(CPUGeneral, LoaDY_ZX) {
     auto cpu = CPU(0, memory, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x80, cpu.getCPUState().getYRegister());
-    EXPECT_EQ(0x05, cpu.getProgramCounter());
+    EXPECT_EQ(0x05, cpu.getCPUState().getProgramCounter());
 }
 
 // STA : STore Accumulator
@@ -456,7 +456,7 @@ TEST(CPUGeneral, JuMP_Ab) {
     auto cpu = CPU(0, memory, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x00, cpu.getCPUState().getXRegister());
-    EXPECT_EQ(0x06, cpu.getProgramCounter());
+    EXPECT_EQ(0x06, cpu.getCPUState().getProgramCounter());
 }
 
 TEST(CPUGeneral, JuMP_Indir) {
@@ -465,7 +465,7 @@ TEST(CPUGeneral, JuMP_Indir) {
     auto cpu = CPU(0, memory, cycleCallback);
     cpu.run();
     EXPECT_EQ(0xff, cpu.getCPUState().getXRegister());
-    EXPECT_EQ(0x06, cpu.getProgramCounter());
+    EXPECT_EQ(0x06, cpu.getCPUState().getProgramCounter());
 }
 
 // INcrement

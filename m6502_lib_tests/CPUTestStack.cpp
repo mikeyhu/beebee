@@ -55,7 +55,7 @@ TEST(CPUStack, PHP_PLP) {
     cpu.getCPUState().setOverflowFlag(true);
     cpu.getCPUState().setNegativeFlag(true);
     cpu.run();
-    EXPECT_EQ(0x05, cpu.getProgramCounter());
+    EXPECT_EQ(0x05, cpu.getCPUState().getProgramCounter());
     EXPECT_TRUE(cpu.getCPUState().isCarryFlag());
     EXPECT_TRUE(cpu.getCPUState().isZeroFlag());
     EXPECT_TRUE(cpu.getCPUState().isDecimalFlag());
@@ -88,7 +88,7 @@ TEST(CPUStack, ReTurnfromInterrupt) {
     auto memory = Memory(mem);
     auto cpu = CPU(0, memory, cycleCallback);
     cpu.run();
-    EXPECT_EQ(0x0e, cpu.getProgramCounter());
+    EXPECT_EQ(0x0e, cpu.getCPUState().getProgramCounter());
     EXPECT_TRUE(cpu.getCPUState().isCarryFlag());
     EXPECT_FALSE(cpu.getCPUState().isZeroFlag());
     EXPECT_TRUE(cpu.getCPUState().isDecimalFlag());

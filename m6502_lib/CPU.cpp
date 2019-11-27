@@ -25,10 +25,8 @@
 template<std::size_t SIZE>
 
 class CPU {
-    const uint16_t STACK_START = 0x100;
+    static const uint16_t STACK_START = 0x100;
     uint8_t stackPointer = 0xff;
-    uint16_t programCounter;
-    uint16_t previousProgramCounter;
     CPUState cpuState = CPUState();
     std::function<void()> cycleCallback;
     Memory<SIZE> *memory;
@@ -36,7 +34,7 @@ class CPU {
     bool doBreak = false;
 
     uint8_t readUInt8() {
-        return memory->getValue(programCounter++);
+        return memory->getValue(cpuState.getProgramCounterAndIncrement());
     }
 
     OpCode readOpCode() {
@@ -69,9 +67,9 @@ class CPU {
         uint8_t location = I(); //always read immediate to move counter anyway
         if (check) {
             if (location >= 0x80) {
-                programCounter = programCounter - 0x100 + location;
+                cpuState.setProgramCounter(cpuState.getProgramCounter() - 0x100 + location);
             } else {
-                programCounter = programCounter + location;
+                cpuState.setProgramCounter(cpuState.getProgramCounter() + location);
             }
         }
     }
@@ -107,8 +105,8 @@ class CPU {
     }
 
     uint16_t Ab() {
-        auto pcLow = programCounter++;
-        programCounter++;
+        auto pcLow = cpuState.getProgramCounterAndIncrement();
+        cpuState.getProgramCounterAndIncrement();
         return memory->get16Value(pcLow);
     }
 
@@ -227,10 +225,10 @@ class CPU {
 
     void opBreak(bool _) {
         if (breakLocation > 0x00) {
-            pushStack16(programCounter + 1);
+            pushStack16(cpuState.getProgramCounter() + 1);
             cpuState.setBreakCommandFlag(true);
             pushStack8(cpuState.flagsAsInt());
-            programCounter = memory->get16Value(breakLocation);
+            cpuState.setProgramCounter(memory->get16Value(breakLocation));
         }
         doBreak = true;
     }
@@ -314,12 +312,12 @@ class CPU {
     }
 
     void opJump(uint16_t location) {
-        programCounter = location;
+        cpuState.setProgramCounter(location);
     }
 
     void opJumpToSubroutine(uint16_t location) {
-        pushStack16(programCounter - 1);
-        programCounter = location;
+        pushStack16(cpuState.getProgramCounter() - 1);
+        cpuState.setProgramCounter(location);
     }
 
     void opORwithAcc(uint8_t value) {
@@ -391,12 +389,12 @@ class CPU {
     void opReturnfromInterrupt(uint16_t _) {
         cpuState.intToFlags(popStack8());
         uint16_t counter = popStack16();
-        programCounter = counter;
+        cpuState.setProgramCounter(counter);
     }
 
     void opReturnfromSubroutine(uint16_t _) {
         uint16_t counter = popStack16();
-        programCounter = counter + 1;
+        cpuState.setProgramCounter(counter + 1);
     }
 
     void opRotateLeft(bool _) {
@@ -493,15 +491,17 @@ class CPU {
 public:
     CPU(uint16_t programCounter, Memory<SIZE> &mem, std::function<void()> cycle)
             : memory(&mem),
-              cycleCallback(cycle),
-              programCounter(programCounter),
-              previousProgramCounter(programCounter) {}
+              cycleCallback(cycle)
+              {
+                cpuState.setProgramCounter(programCounter);
+                cpuState.setPreviousProgramCounterFromPC();
+              }
 
     void run() {
         for (;;) {
-            previousProgramCounter = programCounter;
+            cpuState.setPreviousProgramCounterFromPC();
             auto opCode = readOpCode();
-            auto opLog = OpLog(opCode, previousProgramCounter);
+            auto opLog = OpLog(opCode, cpuState.getPreviousProgramCounter());
             switch (opCode) {
 #define OPCODE(name, code, function, mode) case name : function(mode());break;
 
@@ -518,13 +518,13 @@ public:
                 doBreak = false;
                 return;
             }
-            if (previousProgramCounter == programCounter) {
+            if (cpuState.areProgramCountersEqual()) {
                 std::cout << "Trap found!" << std::endl;
-                if (programCounter != 0x37ce
-                    && programCounter != 0x35c9) {
+                if (cpuState.getProgramCounter() != 0x37ce
+                    && cpuState.getProgramCounter() != 0x35c9) {
                     return;
                 } else {
-                    programCounter = programCounter + 2;
+                    cpuState.setProgramCounter(cpuState.getProgramCounter() + 2);
                 }
             }
 #ifndef NDEBUG
@@ -532,10 +532,6 @@ public:
 #endif
             cycleCallback();
         }
-    }
-
-    [[nodiscard]] uint16_t getProgramCounter() const {
-        return programCounter;
     }
 
     [[nodiscard]] uint8_t getStackPointer() const {
