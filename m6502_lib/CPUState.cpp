@@ -10,10 +10,20 @@ class CPUState {
     bool decimalFlag = false;
     bool overflowFlag = false;
     bool negativeFlag = false;
-
+    uint8_t ARegister = 0;
+    uint8_t XRegister = 0;
+    uint8_t YRegister = 0;
+    uint8_t stackPointer = 0xff;
+    uint16_t programCounter;
+    uint16_t previousProgramCounter;
 
 public:
     CPUState() {}
+
+    void setFlagsBasedOnValue(uint8_t value) {
+        setZeroFlag(value == 0u);
+        setNegativeFlag(value >> 7 != 0);
+    }
 
     bool isCarryFlag() const {
         return carryFlag;
@@ -94,7 +104,7 @@ public:
 
     std::string ToString() {
         std::stringstream buffer;
-        buffer << " flags N;" << negativeFlag
+        buffer << " cpuState N;" << negativeFlag
                        << " V;" << overflowFlag
                        << " -B;" << breakCommandFlag
                        << " D;" << decimalFlag
@@ -102,6 +112,64 @@ public:
                        << " Z;" << zeroFlag
                        << " C;" << carryFlag;
         return buffer.str();
+    }
+
+    uint8_t getARegister() const {
+        return ARegister;
+    }
+
+    void setARegister(uint8_t aRegister) {
+        ARegister = aRegister;
+        setFlagsBasedOnValue(ARegister);
+    }
+
+    uint8_t getXRegister() const {
+        return XRegister;
+    }
+
+    void setXRegister(uint8_t xRegister) {
+        XRegister = xRegister;
+        setZeroFlag(XRegister == 0);
+        setNegativeFlag(XRegister >> 7u != 0);
+
+    }
+
+    uint8_t getYRegister() const {
+        return YRegister;
+    }
+
+    void setYRegister(uint8_t yRegister) {
+        YRegister = yRegister;
+        setZeroFlag(YRegister == 0);
+        setNegativeFlag(YRegister >> 7u != 0);
+    }
+
+    uint8_t getStackPointer() const {
+        return stackPointer;
+    }
+
+    void setStackPointer(uint8_t stackPointer) {
+        CPUState::stackPointer = stackPointer;
+    }
+
+    uint16_t getProgramCounter() const {
+        return programCounter;
+    }
+
+    uint16_t getProgramCounterAndIncrement() {
+        return programCounter++;
+    }
+
+    void setProgramCounter(uint16_t programCounter) {
+        CPUState::programCounter = programCounter;
+    }
+
+    uint16_t getPreviousProgramCounter() const {
+        return previousProgramCounter;
+    }
+
+    void setPreviousProgramCounter(uint16_t previousProgramCounter) {
+        CPUState::previousProgramCounter = previousProgramCounter;
     }
 };
 

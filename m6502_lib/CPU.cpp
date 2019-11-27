@@ -24,14 +24,10 @@ template<std::size_t SIZE>
 
 class CPU {
     const uint16_t STACK_START = 0x100;
-
-    uint8_t ARegister = 0;
-    uint8_t XRegister = 0;
-    uint8_t YRegister = 0;
     uint8_t stackPointer = 0xff;
     uint16_t programCounter;
     uint16_t previousProgramCounter;
-    CPUState flags = CPUState();
+    CPUState cpuState = CPUState();
     std::function<void()> cycleCallback;
     Memory<SIZE>* memory;
     uint16_t breakLocation = 0;
@@ -82,14 +78,9 @@ class CPU {
 #ifndef NDEBUG
         std::cout << "CMP reg:" << std::hex << (int) reg << " val:" << (int) value << std::endl;
 #endif
-        flags.setZeroFlag(value == reg);
-        flags.setCarryFlag(reg >= value);
-        flags.setNegativeFlag(reg < value);
-    }
-
-    void setFlagsBasedOnValue(uint8_t value) {
-        flags.setZeroFlag(value == 0u);
-        flags.setNegativeFlag(value >> 7 != 0);
+        cpuState.setZeroFlag(value == reg);
+        cpuState.setCarryFlag(reg >= value);
+        cpuState.setNegativeFlag(reg < value);
     }
 
     // Memory Modes
@@ -106,11 +97,11 @@ class CPU {
     }
 
     uint16_t ZX() {
-        return (Z() + XRegister) % 0x100;
+        return (Z() + cpuState.getXRegister()) % 0x100;
     }
 
     uint16_t ZY() {
-        return (Z() + YRegister) % 0x100;
+        return (Z() + cpuState.getYRegister()) % 0x100;
     }
 
     uint16_t Ab() {
@@ -120,11 +111,11 @@ class CPU {
     }
 
     uint16_t AbX() {
-        return Ab() + XRegister;
+        return Ab() + cpuState.getXRegister();
     }
 
     uint16_t AbY() {
-        return Ab() + YRegister;
+        return Ab() + cpuState.getYRegister();
     }
 
     bool IMP() {
@@ -136,30 +127,30 @@ class CPU {
     }
 
     uint16_t IndexIndir() {
-        auto zp = (Z() + XRegister) % 0x100;
+        auto zp = (Z() + cpuState.getXRegister()) % 0x100;
         return memory->get16Value(zp);
     }
 
     uint16_t IndirIndex() {
         auto zp = readUInt8();
         auto loc = memory->get16Value(zp);
-        return loc + YRegister;
+        return loc + cpuState.getYRegister();
     }
 
     // Operations
     void opAddWithCarry(uint8_t value) {
-        int sum = ARegister + value;
+        int sum = cpuState.getARegister() + value;
         if (sum > 0xff) {
-            flags.setCarryFlag(1);
+            cpuState.setCarryFlag(1);
         }
-        flags.setOverflowFlag(false);
+        cpuState.setOverflowFlag(false);
 #ifndef NDEBUG
-        std::cout << "ADC reg:" << std::hex << (int) ARegister << " val:" << (int) value << " sum:" << (int) sum
+        std::cout << "ADC reg:" << std::hex << (int) cpuState.getARegister() << " val:" << (int) value << " sum:" << (int) sum
                   << std::endl;
 #endif
-        ARegister = sum;
-        flags.setZeroFlag(ARegister == 0);
-        flags.setNegativeFlag(ARegister >> 7 != 0);
+        cpuState.setARegister(sum);
+        cpuState.setZeroFlag(cpuState.getARegister() == 0);
+        cpuState.setNegativeFlag(cpuState.getARegister() >> 7 != 0);
     }
 
     void opAddWithCarry(uint16_t location) {
@@ -167,21 +158,21 @@ class CPU {
     }
 
     void opArithmeticShiftLeft(bool _) {
-        auto setTo = ARegister << 1u;
-        flags.setCarryFlag(setTo > 0xff);
-        setARegister(setTo);
+        auto setTo = cpuState.getARegister() << 1u;
+        cpuState.setCarryFlag(setTo > 0xff);
+        cpuState.setARegister(setTo);
     }
 
     void opArithmeticShiftLeft(uint16_t location) {
         auto mem = memory->getValue(location);
         auto setTo = mem << 1u;
-        flags.setCarryFlag(setTo > 0xff);
-        setFlagsBasedOnValue(setTo);
+        cpuState.setCarryFlag(setTo > 0xff);
+        cpuState.setFlagsBasedOnValue(setTo);
         memory->setValue(location, setTo);
     }
 
     void opAnd(uint8_t value) {
-        setARegister(ARegister & value);
+        cpuState.setARegister(cpuState.getARegister() & value);
     }
 
     void opAnd(uint16_t location) {
@@ -191,113 +182,113 @@ class CPU {
     void opBit(uint16_t location) {
         auto mem = memory->getValue(location);
 #ifndef NDEBUG
-        std::cout << std::hex << "BIT A:" << (int) ARegister << " ZP:" << (int) mem << std::endl;
+        std::cout << std::hex << "BIT A:" << (int) cpuState.getARegister() << " ZP:" << (int) mem << std::endl;
 #endif
-        auto bit = ARegister & mem;
-        flags.setZeroFlag(bit == 0);
-        flags.setNegativeFlag((mem & 0x80) << 7);
-        flags.setOverflowFlag((mem & 0x40) << 6);
+        auto bit = cpuState.getARegister() & mem;
+        cpuState.setZeroFlag(bit == 0);
+        cpuState.setNegativeFlag((mem & 0x80) << 7);
+        cpuState.setOverflowFlag((mem & 0x40) << 6);
     }
 
     void opBranchonCarryClear(bool _) {
-        branchIfTrue(!flags.isCarryFlag());
+        branchIfTrue(!cpuState.isCarryFlag());
     }
 
     void opBranchonCarrySet(bool _) {
-        branchIfTrue(flags.isCarryFlag());
+        branchIfTrue(cpuState.isCarryFlag());
     }
 
     void opBranchOnOverflowClear(bool _) {
-        branchIfTrue(!flags.isOverflowFlag());
+        branchIfTrue(!cpuState.isOverflowFlag());
     }
 
     void opBranchOnOverflowSet(bool _) {
-        branchIfTrue(flags.isOverflowFlag());
+        branchIfTrue(cpuState.isOverflowFlag());
     }
 
     void opBranchOnEqual(bool _) {
-        branchIfTrue(flags.isZeroFlag());
+        branchIfTrue(cpuState.isZeroFlag());
     }
 
     void opBranchOnNotEqual(bool _) {
-        branchIfTrue(!flags.isZeroFlag());
+        branchIfTrue(!cpuState.isZeroFlag());
     }
 
     void opBranchOnPlus(bool _) {
-        branchIfTrue(!flags.isNegativeFlag());
+        branchIfTrue(!cpuState.isNegativeFlag());
     }
 
     void opBranchOnMinus(bool _) {
-        branchIfTrue(flags.isNegativeFlag());
+        branchIfTrue(cpuState.isNegativeFlag());
     }
 
     void opBreak(bool _) {
         if (breakLocation > 0x00) {
             pushStack16(programCounter + 1);
-            flags.setBreakCommandFlag(true);
-            pushStack8(flags.flagsAsInt());
+            cpuState.setBreakCommandFlag(true);
+            pushStack8(cpuState.flagsAsInt());
             programCounter = memory->get16Value(breakLocation);
         }
         doBreak = true;
     }
 
     void opClearCarry(uint16_t _) {
-        flags.setCarryFlag(false);
+        cpuState.setCarryFlag(false);
     }
 
     void opClearDecimal(uint16_t _) {
-        flags.setDecimalFlag(false);
+        cpuState.setDecimalFlag(false);
     }
 
     void opClearInterrupt(uint16_t _) {
-        flags.setInterruptDisableFlag(false);
+        cpuState.setInterruptDisableFlag(false);
     }
 
     void opClearOverflow(uint16_t _) {
-        flags.setOverflowFlag(false);
+        cpuState.setOverflowFlag(false);
     }
 
     void opCompareAcc(uint8_t value) {
-        compareRegisterTo(ARegister, value);
+        compareRegisterTo(cpuState.getARegister(), value);
     }
 
     void opCompareAcc(uint16_t location) {
-        compareRegisterTo(ARegister, memory->getValue(location));
+        compareRegisterTo(cpuState.getARegister(), memory->getValue(location));
     }
 
     void opCompareX(uint16_t location) {
-        compareRegisterTo(XRegister, memory->getValue(location));
+        compareRegisterTo(cpuState.getXRegister(), memory->getValue(location));
     }
 
     void opCompareX(uint8_t value) {
-        compareRegisterTo(XRegister, value);
+        compareRegisterTo(cpuState.getXRegister(), value);
     }
 
     void opCompareY(uint8_t value) {
-        compareRegisterTo(YRegister, value);
+        compareRegisterTo(cpuState.getYRegister(), value);
     }
 
     void opCompareY(uint16_t location) {
-        compareRegisterTo(YRegister, memory->getValue(location));
+        compareRegisterTo(cpuState.getYRegister(), memory->getValue(location));
     }
 
     void opDecrement(uint16_t location) {
         auto val = memory->getValue(location);
         val = val - 1;
-        setFlagsBasedOnValue(val);
+        cpuState.setFlagsBasedOnValue(val);
         memory->setValue(location, val);
     }
 
     void opDecrementX(bool _) {
-        setXRegister(XRegister - 1);
+        cpuState.setXRegister(cpuState.getXRegister() - 1);
     }
 
     void opDecrementY(bool _) {
-        setYRegister(YRegister - 1);
+        cpuState.setYRegister(cpuState.getYRegister() - 1);
     }
 
     void opExclusiveOR(uint8_t value) {
-        setARegister(ARegister ^ value);
+        cpuState.setARegister(cpuState.getARegister() ^ value);
     }
 
     void opExclusiveOR(uint16_t location) {
@@ -307,16 +298,16 @@ class CPU {
     void opIncrement(uint16_t location) {
         auto val = memory->getValue(location);
         val = val + 1;
-        setFlagsBasedOnValue(val);
+        cpuState.setFlagsBasedOnValue(val);
         memory->setValue(location, val);
     }
 
     void opIncrementX(bool _) {
-        setXRegister(XRegister + 1);
+        cpuState.setXRegister(cpuState.getXRegister() + 1);
     }
 
     void opIncrementY(bool _) {
-        setYRegister(YRegister + 1);
+        cpuState.setYRegister(cpuState.getYRegister() + 1);
     }
 
     void opJump(uint16_t location) {
@@ -329,7 +320,7 @@ class CPU {
     }
 
     void opORwithAcc(uint8_t value) {
-        setARegister(ARegister | value);
+        cpuState.setARegister(cpuState.getARegister() | value);
     }
 
     void opORwithAcc(uint16_t location) {
@@ -337,27 +328,27 @@ class CPU {
     }
 
     void opLoadAcc(uint16_t location) {
-        setARegister(memory->getValue(location));
+        cpuState.setARegister(memory->getValue(location));
     }
 
     void opLoadAcc(uint8_t value) {
-        setARegister(value);
+        cpuState.setARegister(value);
     }
 
     void opLoadX(uint8_t value) {
-        setXRegister(value);
+        cpuState.setXRegister(value);
     }
 
     void opLoadX(uint16_t location) {
-        setXRegister(memory->getValue(location));
+        cpuState.setXRegister(memory->getValue(location));
     }
 
     void opLoadY(uint8_t value) {
-        setYRegister(value);
+        cpuState.setYRegister(value);
     }
 
     void opLoadY(uint16_t location) {
-        setYRegister(memory->getValue(location));
+        cpuState.setYRegister(memory->getValue(location));
     }
 
     void opNoop(bool _) {
@@ -365,37 +356,37 @@ class CPU {
     }
 
     void opLogicalShiftRight(bool _) {
-        auto setTo = ARegister >> 1u;
-        flags.setCarryFlag(ARegister & 1u);
-        setARegister(setTo);
+        auto setTo = cpuState.getARegister() >> 1u;
+        cpuState.setCarryFlag(cpuState.getARegister() & 1u);
+        cpuState.setARegister(setTo);
     }
 
     void opLogicalShiftRight(uint16_t location) {
         auto mem = memory->getValue(location);
         auto setTo = mem >> 1u;
-        flags.setCarryFlag(mem & 1u);
-        setFlagsBasedOnValue(setTo);
+        cpuState.setCarryFlag(mem & 1u);
+        cpuState.setFlagsBasedOnValue(setTo);
         memory->setValue(location, setTo);
     }
 
     void opPushProcessorStatus(bool _) {
-        pushStack8(flags.flagsAsInt());
+        pushStack8(cpuState.flagsAsInt());
     }
 
     void opPullProcessorStatus(bool _) {
-        flags.intToFlags(popStack8());
+        cpuState.intToFlags(popStack8());
     }
 
     void opPushAcc(bool _) {
-        pushStack8(ARegister);
+        pushStack8(cpuState.getARegister());
     }
 
     void opPullAcc(bool _) {
-        setARegister(popStack8());
+        cpuState.setARegister(popStack8());
     }
 
     void opReturnfromInterrupt(uint16_t _) {
-        flags.intToFlags(popStack8());
+        cpuState.intToFlags(popStack8());
         uint16_t counter = popStack16();
         programCounter = counter;
     }
@@ -406,92 +397,93 @@ class CPU {
     }
 
     void opRotateLeft(bool _) {
-        auto setTo = ARegister << 1u | flags.isCarryFlag();
-        flags.setCarryFlag(ARegister & 0x80u);
-        setARegister(setTo);
+        auto setTo = cpuState.getARegister() << 1u | cpuState.isCarryFlag();
+        cpuState.setCarryFlag(cpuState.getARegister() & 0x80u);
+        cpuState.setARegister(setTo);
     }
 
     void opRotateLeft(uint16_t location) {
         auto mem = memory->getValue(location);
-        auto setTo = mem << 1u | flags.isCarryFlag();
-        flags.setCarryFlag(mem & 0x80u);
-        setFlagsBasedOnValue(setTo);
+        auto setTo = mem << 1u | cpuState.isCarryFlag();
+        cpuState.setCarryFlag(mem & 0x80u);
+        cpuState.setFlagsBasedOnValue(setTo);
         memory->setValue(location, setTo);
     }
 
     void opRotateRight(bool _) {
-        auto setTo = ARegister >> 1u | (flags.isCarryFlag() << 7u);
-        flags.setCarryFlag(ARegister & 0x1u);
-        setARegister(setTo);
+        auto setTo = cpuState.getARegister() >> 1u | (cpuState.isCarryFlag() << 7u);
+        cpuState.setCarryFlag(cpuState.getARegister() & 0x1u);
+        cpuState.setARegister(setTo);
     }
 
     void opRotateRight(uint16_t location) {
         auto mem = memory->getValue(location);
-        auto setTo = mem >> 1u | (flags.isCarryFlag() << 7u);
-        flags.setCarryFlag(mem & 0x1u);
-        setFlagsBasedOnValue(setTo);
+        auto setTo = mem >> 1u | (cpuState.isCarryFlag() << 7u);
+        cpuState.setCarryFlag(mem & 0x1u);
+        cpuState.setFlagsBasedOnValue(setTo);
         memory->setValue(location, setTo);
     }
 
     void opSetCarry(bool _) {
-        flags.setCarryFlag(true);
+        cpuState.setCarryFlag(true);
     }
 
     void opSetDecimal(bool _) {
-        flags.setDecimalFlag(true);
+        cpuState.setDecimalFlag(true);
     }
 
     void opSetInterrupt(bool _) {
-        flags.setInterruptDisableFlag(true);
+        cpuState.setInterruptDisableFlag(true);
     }
 
     void opSubtractWithCarry(uint16_t location) {
         auto mem = memory->getValue(location);
-        uint8_t sum = ARegister - mem - !flags.isCarryFlag();
-        setFlagsBasedOnValue(sum);
-        if (mem > ARegister) {
-            flags.setNegativeFlag(true);
+        auto previousA = cpuState.getARegister();
+        uint8_t sum = previousA - mem - !cpuState.isCarryFlag();
+        cpuState.setARegister(sum);
+        cpuState.setFlagsBasedOnValue(sum);
+        if (mem > previousA) {
+            cpuState.setNegativeFlag(true);
         }
-        flags.setOverflowFlag(false);
-        std::cout << "SBC reg:" << std::hex << (int) ARegister << " val:" << (int) mem << " res:" << (int) sum
+        cpuState.setOverflowFlag(false);
+        std::cout << "SBC reg:" << std::hex << (int) cpuState.getARegister() << " val:" << (int) mem << " res:" << (int) sum
                   << std::endl;
-        ARegister = sum;
     }
 
     void opStoreAcc(uint16_t location) {
-        memory->setValue(location, ARegister);
+        memory->setValue(location, cpuState.getARegister());
     }
 
     void opStoreX(uint16_t location) {
-        memory->setValue(location, XRegister);
+        memory->setValue(location, cpuState.getXRegister());
     }
 
     void opStoreY(uint16_t location) {
-        memory->setValue(location, YRegister);
+        memory->setValue(location, cpuState.getYRegister());
     }
 
     void opTransferAtoX(bool _) {
-        setXRegister(ARegister);
+        cpuState.setXRegister(cpuState.getARegister());
     }
 
     void opTransferAtoY(bool _) {
-        setYRegister(ARegister);
+        cpuState.setYRegister(cpuState.getARegister());
     }
 
     void opTransferStacktoX(bool _) {
-        setXRegister(stackPointer);
+        cpuState.setXRegister(stackPointer);
     }
 
     void opTransferXtoA(bool _) {
-        setARegister(XRegister);
+        cpuState.setARegister(cpuState.getXRegister());
     }
 
     void opTransferXtoStack(bool _) {
-        stackPointer = XRegister;
+        stackPointer = cpuState.getXRegister();
     }
 
     void opTransferYtoA(bool _) {
-        setARegister(YRegister);
+        cpuState.setARegister(cpuState.getYRegister());
     }
 
 public:
@@ -550,35 +542,6 @@ public:
         return programCounter;
     }
 
-    uint8_t getARegister() const {
-        return ARegister;
-    }
-
-    void setARegister(uint8_t aRegister) {
-        ARegister = aRegister;
-        setFlagsBasedOnValue(aRegister);
-    }
-
-    uint8_t getXRegister() const {
-        return XRegister;
-    }
-
-    void setXRegister(uint8_t xRegister) {
-        XRegister = xRegister;
-        flags.setZeroFlag(XRegister == 0);
-        flags.setNegativeFlag(XRegister >> 7u != 0);
-    }
-
-    uint8_t getYRegister() const {
-        return YRegister;
-    }
-
-    void setYRegister(uint8_t yRegister) {
-        YRegister = yRegister;
-        flags.setZeroFlag(YRegister == 0);
-        flags.setNegativeFlag(YRegister >> 7u != 0);
-    }
-
     uint8_t getStackPointer() const {
         return stackPointer;
     }
@@ -591,8 +554,8 @@ public:
         return breakLocation;
     }
 
-    CPUState &getFlags() {
-        return flags;
+    CPUState &getCPUState() {
+        return cpuState;
     }
 
     void setBreakLocation(uint16_t breakLocation) {
@@ -605,10 +568,7 @@ public:
 
     void printState(OpLog opLog) {
         std::cout << opLog.ToString()
-                  << " SP:" << (int) stackPointer
-                  << " A:" << (int) ARegister
-                  << " X:" << (int) XRegister
-                  << " Y:" << (int) YRegister;
+                  << " SP:" << (int) stackPointer;
         for (int i = stackPointer; i <= 0xff; i++) {
             std::cout << " [" << i << ":" << (int) (uint8_t) memory->getValue(0x100 + i) << "]";
         }

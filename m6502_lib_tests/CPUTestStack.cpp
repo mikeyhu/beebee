@@ -29,7 +29,7 @@ TEST(CPUStack, PuLlAcc) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0xff, cpu.getStackPointer());
-    EXPECT_EQ(0x01, cpu.getARegister());
+    EXPECT_EQ(0x01, cpu.getCPUState().getARegister());
     EXPECT_EQ(0x01, cpu.getMemoryAt(0x1ff));
 }
 
@@ -38,31 +38,31 @@ TEST(CPUStack, TransferStacktoX) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0xfe, cpu.getStackPointer());
-    EXPECT_EQ(0xfe, cpu.getXRegister());
+    EXPECT_EQ(0xfe, cpu.getCPUState().getXRegister());
 }
 
 TEST(CPUStack, PHP_PLP) {
     std::array<uint8_t, 0x5> mem = {PusHProcessorstatus, LoaDAcc_I, 0x01, PuLlProcessorstatus, BReaK};
     auto cpu = CPU(0, mem, cycleCallback);
-    cpu.getFlags().setCarryFlag(true);
-    cpu.getFlags().setZeroFlag(true);
-    cpu.getFlags().setDecimalFlag(true);
-    cpu.getFlags().setOverflowFlag(true);
-    cpu.getFlags().setNegativeFlag(true);
+    cpu.getCPUState().setCarryFlag(true);
+    cpu.getCPUState().setZeroFlag(true);
+    cpu.getCPUState().setDecimalFlag(true);
+    cpu.getCPUState().setOverflowFlag(true);
+    cpu.getCPUState().setNegativeFlag(true);
     cpu.run();
     EXPECT_EQ(0x05, cpu.getProgramCounter());
-    EXPECT_TRUE(cpu.getFlags().isCarryFlag());
-    EXPECT_TRUE(cpu.getFlags().isZeroFlag());
-    EXPECT_TRUE(cpu.getFlags().isDecimalFlag());
-    EXPECT_TRUE(cpu.getFlags().isOverflowFlag());
-    EXPECT_TRUE(cpu.getFlags().isNegativeFlag());
+    EXPECT_TRUE(cpu.getCPUState().isCarryFlag());
+    EXPECT_TRUE(cpu.getCPUState().isZeroFlag());
+    EXPECT_TRUE(cpu.getCPUState().isDecimalFlag());
+    EXPECT_TRUE(cpu.getCPUState().isOverflowFlag());
+    EXPECT_TRUE(cpu.getCPUState().isNegativeFlag());
 }
 
 TEST(CPUStack, JumptoSubRoutine_Ab) {
     std::array<uint8_t, 0x200> mem = {LoaDX_I, 0xff, TransferXtoStack, JumptoSubRoutine_Ab, 0x08, 0x00, LoaDAcc_I, 0xff, BReaK};
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
-    EXPECT_EQ(0x00, cpu.getARegister());
+    EXPECT_EQ(0x00, cpu.getCPUState().getARegister());
     EXPECT_EQ(0xfd, cpu.getStackPointer());
     EXPECT_EQ(0x00, cpu.getMemoryAt(0x1ff));
     EXPECT_EQ(0x05, cpu.getMemoryAt(0x1fe));
@@ -72,7 +72,7 @@ TEST(CPUStack, ReTurnfromSubroutine) {
     std::array<uint8_t, 0x200> mem = {LoaDX_I, 0xff, TransferXtoStack, JumptoSubRoutine_Ab, 0x09, 0x00, LoaDAcc_I, 0xff, BReaK, ReTurnfromSubroutine};
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
-    EXPECT_EQ(0xff, cpu.getARegister());
+    EXPECT_EQ(0xff, cpu.getCPUState().getARegister());
     EXPECT_EQ(0xff, cpu.getStackPointer());
 }
 
@@ -81,12 +81,12 @@ TEST(CPUStack, ReTurnfromInterrupt) {
     auto cpu = CPU(0, mem, cycleCallback);
     cpu.run();
     EXPECT_EQ(0x0e, cpu.getProgramCounter());
-    EXPECT_TRUE(cpu.getFlags().isCarryFlag());
-    EXPECT_FALSE(cpu.getFlags().isZeroFlag());
-    EXPECT_TRUE(cpu.getFlags().isDecimalFlag());
-    EXPECT_TRUE(cpu.getFlags().isOverflowFlag());
-    EXPECT_TRUE(cpu.getFlags().isNegativeFlag());
+    EXPECT_TRUE(cpu.getCPUState().isCarryFlag());
+    EXPECT_FALSE(cpu.getCPUState().isZeroFlag());
+    EXPECT_TRUE(cpu.getCPUState().isDecimalFlag());
+    EXPECT_TRUE(cpu.getCPUState().isOverflowFlag());
+    EXPECT_TRUE(cpu.getCPUState().isNegativeFlag());
 
-    EXPECT_EQ(0xff, cpu.getXRegister());
+    EXPECT_EQ(0xff, cpu.getCPUState().getXRegister());
 }
 
