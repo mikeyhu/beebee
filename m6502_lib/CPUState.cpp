@@ -22,10 +22,10 @@ public:
 
     void setFlagsBasedOnValue(uint8_t value) {
         setZeroFlag(value == 0u);
-        setNegativeFlag(value >> 7 != 0);
+        setNegativeFlag(value >> 7u != 0u);
     }
 
-    bool isCarryFlag() const {
+    [[nodiscard]] bool isCarryFlag() const {
         return carryFlag;
     }
 
@@ -33,7 +33,7 @@ public:
         CPUState::carryFlag = carryFlag;
     }
 
-    bool isZeroFlag() const {
+    [[nodiscard]] bool isZeroFlag() const {
         return zeroFlag;
     }
 
@@ -41,7 +41,7 @@ public:
         CPUState::zeroFlag = zeroFlag;
     }
 
-    bool isInterruptDisableFlag() const {
+    [[nodiscard]] bool isInterruptDisableFlag() const {
         return interruptDisableFlag;
     }
 
@@ -49,7 +49,7 @@ public:
         CPUState::interruptDisableFlag = interruptDisableFlag;
     }
 
-    bool isBreakCommandFlag() const {
+    [[nodiscard]] bool isBreakCommandFlag() const {
         return breakCommandFlag;
     }
 
@@ -57,7 +57,7 @@ public:
         CPUState::breakCommandFlag = breakCommandFlag;
     }
 
-    bool isDecimalFlag() const {
+    [[nodiscard]] bool isDecimalFlag() const {
         return decimalFlag;
     }
 
@@ -65,7 +65,7 @@ public:
         CPUState::decimalFlag = decimalFlag;
     }
 
-    bool isOverflowFlag() const {
+    [[nodiscard]] bool isOverflowFlag() const {
         return overflowFlag;
     }
 
@@ -73,7 +73,7 @@ public:
         CPUState::overflowFlag = overflowFlag;
     }
 
-    bool isNegativeFlag() const {
+    [[nodiscard]] bool isNegativeFlag() const {
         return negativeFlag;
     }
 
@@ -114,7 +114,7 @@ public:
         return buffer.str();
     }
 
-    uint8_t getARegister() const {
+    [[nodiscard]] uint8_t getARegister() const {
         return ARegister;
     }
 
@@ -123,7 +123,7 @@ public:
         setFlagsBasedOnValue(ARegister);
     }
 
-    uint8_t getXRegister() const {
+    [[nodiscard]] uint8_t getXRegister() const {
         return XRegister;
     }
 
@@ -134,7 +134,7 @@ public:
 
     }
 
-    uint8_t getYRegister() const {
+    [[nodiscard]] uint8_t getYRegister() const {
         return YRegister;
     }
 
@@ -144,7 +144,7 @@ public:
         setNegativeFlag(YRegister >> 7u != 0);
     }
 
-    uint8_t getStackPointer() const {
+    [[nodiscard]] uint8_t getStackPointer() const {
         return stackPointer;
     }
 
@@ -152,7 +152,7 @@ public:
         CPUState::stackPointer = stackPointer;
     }
 
-    uint16_t getProgramCounter() const {
+    [[nodiscard]] uint16_t getProgramCounter() const {
         return programCounter;
     }
 

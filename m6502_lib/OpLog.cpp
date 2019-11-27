@@ -2,6 +2,8 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <iomanip>
+
 #ifndef CLASS_OPCODE
 #define CLASS_OPCODE
 #include "OpCode.cpp"
@@ -12,7 +14,7 @@ class OpLog {
     uint16_t programCounter;
     std::string log="";
 
-    std::string OpCodeToString(OpCode value) {
+    static std::string OpCodeToString(OpCode value) {
         switch (value) {
 #define OPCODE(name, code, function, mode) case code: return #name;
 
@@ -30,7 +32,7 @@ public:
 
     std::string ToString() {
         std::stringstream buffer;
-        buffer << OpCodeToString(opCode) << "PC:" << std::hex << (int)programCounter;
+        buffer << std::setw(22) << OpCodeToString(opCode) << " PC:" << std::hex << (int)programCounter;
         return buffer.str();
     }
 };

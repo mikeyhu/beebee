@@ -493,17 +493,9 @@ class CPU {
 public:
     CPU(uint16_t programCounter, Memory<SIZE> &mem, std::function<void()> cycle)
             : memory(&mem),
-              cycleCallback(cycle) {
-        this->programCounter = programCounter;
-        this->previousProgramCounter = programCounter;
-    }
-
-    CPU(uint16_t programCounter, std::array<uint8_t, SIZE> mem, std::function<void()> cycle)
-            : cycleCallback(cycle) {
-        this->memory = new Memory(mem);
-        this->programCounter = programCounter;
-        this->previousProgramCounter = programCounter;
-    }
+              cycleCallback(cycle),
+              programCounter(programCounter),
+              previousProgramCounter(programCounter) {}
 
     void run() {
         for (;;) {
@@ -542,11 +534,11 @@ public:
         }
     }
 
-    uint16_t getProgramCounter() const {
+    [[nodiscard]] uint16_t getProgramCounter() const {
         return programCounter;
     }
 
-    uint8_t getStackPointer() const {
+    [[nodiscard]] uint8_t getStackPointer() const {
         return stackPointer;
     }
 
@@ -554,7 +546,7 @@ public:
         CPU::stackPointer = stackPointer;
     }
 
-    uint16_t getBreakLocation() const {
+    [[nodiscard]] uint16_t getBreakLocation() const {
         return breakLocation;
     }
 
@@ -566,12 +558,12 @@ public:
         CPU::breakLocation = breakLocation;
     }
 
-    const uint8_t getMemoryAt(uint16_t location) const {
+    [[nodiscard]] uint8_t getMemoryAt(uint16_t location) const {
         return memory->getValue(location);
     }
 
     void printState(OpLog opLog) {
         std::cout << opLog.ToString()
-                  << " SP:" << (int) stackPointer;
+                  << " SP:" << (int) stackPointer << std::endl;
     }
 };

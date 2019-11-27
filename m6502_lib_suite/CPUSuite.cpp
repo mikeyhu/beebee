@@ -27,11 +27,13 @@ int main() {
         cycles++;
     };
 
-    auto cpu = CPU(0x400, mem, cycleCallback);
+    auto memory = new Memory(mem);
+    auto cpu = CPU(0x400, *memory, cycleCallback);
     cpu.setBreakLocation(0xfffe);
     cpu.run();
     cpu.run(); //return from break for test 11.
     cpu.run(); //return from break for test 11 at 9f5.
     std::cout << std::dec << "cycles:" << cycles << std::endl;
+    delete memory;
     return 0;
 }
