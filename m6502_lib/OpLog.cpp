@@ -26,13 +26,14 @@ class OpLog {
 public:
     OpLog(OpCode opCode, uint16_t programCounter) : opCode(opCode), programCounter(programCounter) {}
 
-    void addToLog(std::string &entry) {
+    void addToLog(std::string entry) {
         log.append(entry);
     }
 
     std::string ToString() {
         std::stringstream buffer;
         buffer << std::setw(22) << OpCodeToString(opCode) << " PC:" << std::hex << (int)programCounter;
+        buffer << " " << log;
         return buffer.str();
     }
 };

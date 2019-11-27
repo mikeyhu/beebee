@@ -528,6 +528,7 @@ public:
                 }
             }
 #ifndef NDEBUG
+            opLog.addToLog(cpuState.ToString());
             printState(opLog);
 #endif
             cycleCallback();

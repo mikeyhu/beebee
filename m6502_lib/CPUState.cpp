@@ -104,7 +104,7 @@ public:
 
     std::string ToString() {
         std::stringstream buffer;
-        buffer << " cpuState N;" << negativeFlag
+        buffer << "cpuState N;" << negativeFlag
                        << " V;" << overflowFlag
                        << " -B;" << breakCommandFlag
                        << " D;" << decimalFlag
