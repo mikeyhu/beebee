@@ -13,9 +13,11 @@
 
 #ifndef BEEBEE_UTILITIES
 #define BEEBEE_UTILITIES
+
 #include "Utilities.cpp"
 
 #endif
+
 #include "Memory.cpp"
 #include "CPUState.cpp"
 #include "OpLog.cpp"
@@ -29,7 +31,7 @@ class CPU {
     uint16_t previousProgramCounter;
     CPUState cpuState = CPUState();
     std::function<void()> cycleCallback;
-    Memory<SIZE>* memory;
+    Memory<SIZE> *memory;
     uint16_t breakLocation = 0;
     bool doBreak = false;
 
@@ -145,7 +147,8 @@ class CPU {
         }
         cpuState.setOverflowFlag(false);
 #ifndef NDEBUG
-        std::cout << "ADC reg:" << std::hex << (int) cpuState.getARegister() << " val:" << (int) value << " sum:" << (int) sum
+        std::cout << "ADC reg:" << std::hex << (int) cpuState.getARegister() << " val:" << (int) value << " sum:"
+                  << (int) sum
                   << std::endl;
 #endif
         cpuState.setARegister(sum);
@@ -446,7 +449,8 @@ class CPU {
             cpuState.setNegativeFlag(true);
         }
         cpuState.setOverflowFlag(false);
-        std::cout << "SBC reg:" << std::hex << (int) cpuState.getARegister() << " val:" << (int) mem << " res:" << (int) sum
+        std::cout << "SBC reg:" << std::hex << (int) cpuState.getARegister() << " val:" << (int) mem << " res:"
+                  << (int) sum
                   << std::endl;
     }
 
@@ -487,8 +491,8 @@ class CPU {
     }
 
 public:
-    CPU(uint16_t programCounter, Memory<SIZE> mem, std::function<void()> cycle)
-            : memory(mem),
+    CPU(uint16_t programCounter, Memory<SIZE> &mem, std::function<void()> cycle)
+            : memory(&mem),
               cycleCallback(cycle) {
         this->programCounter = programCounter;
         this->previousProgramCounter = programCounter;
@@ -569,9 +573,5 @@ public:
     void printState(OpLog opLog) {
         std::cout << opLog.ToString()
                   << " SP:" << (int) stackPointer;
-        for (int i = stackPointer; i <= 0xff; i++) {
-            std::cout << " [" << i << ":" << (int) (uint8_t) memory->getValue(0x100 + i) << "]";
-        }
-        std::cout << " testcase:" << (int) (uint8_t) memory->getValue(0x200) << std::endl;
     }
 };
