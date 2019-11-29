@@ -13,7 +13,8 @@ add_executable(m6502_lib_tests
         CPUTestBranch.cpp
         CPUTestStack.cpp
         MemoryTest.cpp
-        Helpers.cpp)
+        Helpers.cpp
+        PageableMemoryTest.cpp)
 
 target_link_libraries(m6502_lib_tests m6502_lib)
 

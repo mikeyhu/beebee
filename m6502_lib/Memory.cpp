@@ -13,18 +13,19 @@ template<std::size_t SIZE>
 #define BEEBEE_MEMORY
 
 class Memory {
+
+
+protected:
     std::array<uint8_t, SIZE> memory;
-
-
 public:
     explicit Memory(std::array<uint8_t, SIZE> &mem)
             : memory(mem) {}
 
-    uint8_t getValue(uint16_t location) {
+    virtual uint8_t getValue(uint16_t location) {
         return memory[location];
     }
 
-    void setValue(uint16_t location, uint8_t value) {
+    virtual void setValue(uint16_t location, uint8_t value) {
         memory[location] = value;
     }
 
