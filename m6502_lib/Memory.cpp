@@ -7,9 +7,9 @@
 
 #endif
 
-template<std::size_t SIZE>
 
 #ifndef BEEBEE_MEMORY
+template<std::size_t SIZE>
 #define BEEBEE_MEMORY
 
 class Memory {

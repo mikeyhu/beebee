@@ -16,6 +16,14 @@ Runs the 6502 assembler tests found here: https://github.com/Klaus2m5/6502_65C02
 Copy the binary found here: https://github.com/Klaus2m5/6502_65C02_functional_tests/blob/master/bin_files/6502_functional_test.bin
 Description of the binary is available here: https://github.com/Klaus2m5/6502_65C02_functional_tests/blob/master/bin_files/6502_functional_test.lst
 
+## Installing everything
+```
+# create a virtual env for conan package manager
+python3 -m venv env
+source env/bin/activate
+pip install conan
+```
+
 ## Running the tests
 ```
 ./build-debug.sh
