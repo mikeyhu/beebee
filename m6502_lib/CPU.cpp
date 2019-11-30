@@ -30,6 +30,7 @@ class CPU {
     CPUState cpuState = CPUState();
     std::function<void()> cycleCallback;
     Memory<SIZE> *memory;
+    OpLog *opLog;
     uint16_t breakLocation = 0;
     bool doBreak = false;
 
@@ -65,6 +66,11 @@ class CPU {
 
     void branchIfTrue(bool check) {
         uint8_t location = I(); //always read immediate to move counter anyway
+#ifndef NDEBUG
+        std::stringstream buffer;
+        buffer << "branch:" << check << " to:" << std::hex << (int)location << " ";
+        opLog->addToLog(buffer.str());
+#endif
         if (check) {
             if (location >= 0x80) {
                 cpuState.setProgramCounter(cpuState.getProgramCounter() - 0x100 + location);
@@ -173,6 +179,11 @@ class CPU {
     }
 
     void opAnd(uint8_t value) {
+#ifndef NDEBUG
+        std::stringstream buffer;
+        buffer << "and:" << std::hex << (int)value << " ";
+        opLog->addToLog(buffer.str());
+#endif
         cpuState.setARegister(cpuState.getARegister() & value);
     }
 
@@ -312,6 +323,11 @@ class CPU {
     }
 
     void opJump(uint16_t location) {
+#ifndef NDEBUG
+        std::stringstream buffer;
+        buffer << "jmp:" << std::hex << (int)location << " ";
+        opLog->addToLog(buffer.str());
+#endif
         cpuState.setProgramCounter(location);
     }
 
@@ -501,7 +517,7 @@ public:
         for (;;) {
             cpuState.setPreviousProgramCounterFromPC();
             auto opCode = readOpCode();
-            auto opLog = OpLog(opCode, cpuState.getPreviousProgramCounter());
+            opLog = new OpLog(opCode, cpuState.getPreviousProgramCounter());
             switch (opCode) {
 #define OPCODE(name, code, function, mode) case name : function(mode());break;
 
@@ -510,11 +526,12 @@ public:
                 default:
                     std::cout << "Unknown OpCode:" << std::endl;
 #ifndef NDEBUG
-                    printState(opLog);
+                    printState(*opLog);
 #endif
                     return;
             }
             if (doBreak) {
+                printState(*opLog);
                 doBreak = false;
                 return;
             }
@@ -528,10 +545,11 @@ public:
                 }
             }
 #ifndef NDEBUG
-            opLog.addToLog(cpuState.ToString());
-            printState(opLog);
+            opLog->addToLog(cpuState.ToString());
+            printState(*opLog);
 #endif
             cycleCallback();
+            delete opLog;
         }
     }
 

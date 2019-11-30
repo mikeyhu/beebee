@@ -23,6 +23,8 @@ public:
             return memory[location];
         } else if(location>=0xC000) {
             return os[location-0xC000];
+        } else {
+            exit(1); // Fail paged memory not implemented
         }
     }
 
@@ -31,6 +33,8 @@ public:
             memory[location] = value;
         } else if(location>=0xC000) {
             os[location-0xC000] = value;
+        } else {
+            exit(1); // Fail paged memory not implemented
         }
     }
 };
