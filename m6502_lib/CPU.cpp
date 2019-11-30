@@ -345,7 +345,12 @@ class CPU {
     }
 
     void opLoadAcc(uint16_t location) {
-        cpuState.setARegister(memory->getValue(location));
+#ifndef NDEBUG
+        std::stringstream buffer;
+        buffer << "lda from:" << std::hex << (int)location << " ";
+        opLog->addToLog(buffer.str());
+#endif
+        opLoadAcc(memory->getValue(location));
     }
 
     void opLoadAcc(uint8_t value) {
