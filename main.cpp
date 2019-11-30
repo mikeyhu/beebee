@@ -3,6 +3,7 @@
 #include <array>
 #include "m6502_lib/CPU.cpp"
 #include "m6502_lib/PageableMemory.cpp"
+#include "App.cpp"
 
 static const uint16_t RAM_SIZE = 0x8000;
 static const uint16_t OS_SIZE = 0x4000;
@@ -25,7 +26,7 @@ std::array<uint8_t, OS_SIZE> loadFile(std::string filename) {
     return mem;
 }
 
-int main() {
+int main(int argc, char *argv[]) {
     auto os = loadFile("./MOS100");
     auto basic = loadFile("./BASIC100");
 
@@ -41,12 +42,15 @@ int main() {
     memory->setPageOS(os);
     memory->setPage(basic,0xF);
     auto programCounter = memory->get16Value(0xFFFE);
-    auto cpu = CPU(programCounter, *memory, cycleCallback);
-    cpu.setBreakLocation(0xfffe);
-    for (;;) {
-        cpu.run();
-        std::cout << std::dec << "cycles:" << cycles << std::endl;
-    }
+
+    auto app = new App();
+    app->start();
+//    auto cpu = CPU(programCounter, *memory, cycleCallback);
+//    cpu.setBreakLocation(0xfffe);
+//    for (;;) {
+//        cpu.run();
+//        std::cout << std::dec << "cycles:" << cycles << std::endl;
+//    }
 //    delete memory;
 //    return 0;
 }

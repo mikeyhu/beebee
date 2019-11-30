@@ -1,5 +1,6 @@
 cmake-build-debug/
 cmake-build-release/
+env/
 .idea/
 m6502_lib_tests/lib/
 NOTES.md
