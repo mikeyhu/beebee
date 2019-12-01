@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include <cstring>
+#include "beebee_lib/Teletext.cpp"
 
 class App {
     static const int SCREEN_WIDTH = 1280;
@@ -11,9 +12,6 @@ class App {
 
     bool quit;
 
-    static char from6to8(char sixBit) {
-        return (sixBit * 255) / 63;
-    }
 public:
     App() {}
 
@@ -24,26 +22,21 @@ public:
         }
         window = SDL_CreateWindow( "SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
         renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
-        texture = SDL_CreateTexture(renderer,SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, 320, 200);
-
-        Uint32 palette[256];
-        for(int i=0; i< 256; i++) {
-            unsigned char r = from6to8(i);
-            unsigned char g = from6to8(i);
-            unsigned char b = from6to8(i);
-            palette[i] = 255 << 24 | r << 16 | g << 8 | b;
-        }
-
-        Uint32 * pixels = new Uint32[320 * 200];
-        for(int i = 0; i< 64000; i++) {
-            auto col = palette[i % 255];
-            pixels[i] = col;
-
-        }
-        SDL_UpdateTexture(texture, NULL, pixels,320 * 4);
+        texture = SDL_CreateTexture(renderer,SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, 6, 10);
 
         SDL_RenderClear(renderer);
-        SDL_RenderCopy(renderer, texture, NULL, NULL);
+
+        for(uint8_t i=0x20;i<0x80; i++) {
+            auto letter = Teletext::getCharacter(i);
+            SDL_UpdateTexture(texture, NULL, letter, 6 * 4);
+            SDL_Rect dst;
+            dst.x = 24*(i%0xf);
+            dst.y = 40*(i/0xf);
+            dst.w = 24;
+            dst.h = 40;
+            SDL_RenderCopy(renderer, texture, NULL, &dst);
+        }
+
         SDL_RenderPresent(renderer);
 
         SDL_Event e;

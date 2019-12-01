@@ -12,5 +12,6 @@ include_directories(m6502_lib)
 add_subdirectory(m6502_lib)
 add_subdirectory(m6502_lib_tests)
 add_subdirectory(m6502_lib_suite)
+add_subdirectory(beebee_lib)
 
 target_link_libraries(beebee ${CONAN_LIBS})
