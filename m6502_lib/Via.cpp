@@ -27,14 +27,14 @@ public:
     Via(Memory<SIZE> &memory) : memory(&memory) {}
 
     void initialise() {
+        for(uint16_t i = 0; i <= 0xf;i++) {
+            memory->setValue(0xFE40 + i, 0x00);
+            memory->setValue(0xFE60 + i, 0x00);
+        }
+
         memory->setValue(0xFE40, 0xFF);
-        memory->setValue(0xFE41, 0x00);
-        memory->setValue(0xFE42, 0x00);
         memory->setValue(0xFE43, 0xFF);
-        memory->setValue(0xFE4E, 0x00);
         memory->setValue(0xFE60, 0xFF);
-        memory->setValue(0xFE61, 0x00);
-        memory->setValue(0xFE62, 0x00);
         memory->setValue(0xFE63, 0xFF);
     }
 };
