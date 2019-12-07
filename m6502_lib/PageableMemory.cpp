@@ -2,7 +2,9 @@
 #include <iostream>
 #include "Memory.cpp"
 
-
+#ifndef BEEBEE_PAGEABLEMEMORY
+#define BEEBEE_PAGEABLEMEMORY
+#endif
 
 class PageableMemory: public Memory<0x8000>{
     static const uint8_t NUM_PAGES=0x10;

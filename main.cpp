@@ -46,18 +46,18 @@ int main(int argc, char *argv[]) {
     memory->setPage(dfs,0x0);
     auto programCounter = 0xD9CD;//memory->get16Value(0xFFFE);
 
-//    auto app = new App();
-//    app->start();
+    auto app = new App(*memory);
+    app->start();
 
-    auto via = Via(*memory);
-
-    auto cpu = CPU(programCounter, *memory, cycleCallback);
-    cpu.setBreakLocation(0xfffe);
-    via.initialise();
-    for (;;) {
-        cpu.run();
-        std::cout << std::dec << "cycles:" << cycles << std::endl;
-    }
+//    auto via = Via(*memory);
+//
+//    auto cpu = CPU(programCounter, *memory, cycleCallback);
+//    cpu.setBreakLocation(0xfffe);
+//    via.initialise();
+//    for (;;) {
+//        cpu.run();
+//        std::cout << std::dec << "cycles:" << cycles << std::endl;
+//    }
     delete memory;
     return 0;
 }
