@@ -36,11 +36,21 @@ public:
     }
 
     uint8_t getValue(uint16_t location) {
+
         if(location<0x8000) {
+#ifndef NDEBUG
+            std::cout << "memory read:" << std::hex << (int)memory[location] << " from " << (int)location<<std::endl;
+#endif
             return memory[location];
         } else if(location>=0xC000) {
+#ifndef NDEBUG
+            std::cout << "os read:" << std::hex << (int)os[location-0xC000] << " from " << (int)location<<std::endl;
+#endif
             return os[location-0xC000];
         } else {
+#ifndef NDEBUG
+            std::cout << "page read:" << std::hex << (int)pages[currentPage][location-0x8000] << " from " << (int)location<< " page:" << (int)currentPage << std::endl;
+#endif
             return pages[currentPage][location-0x8000];
         }
     }
@@ -67,7 +77,9 @@ public:
             }
             os[location-0xC000] = value;
         } else {
-            exit(1001); // Fail paged memory not implemented
+#ifndef NDEBUG
+            std::cout << "ERROR write to paged rom:" << std::hex << (int)pages[currentPage][location-0x8000] << " to " << (int)location<< " page:" << (int)currentPage << std::endl;
+#endif
         }
     }
 };

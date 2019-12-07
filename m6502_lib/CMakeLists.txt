@@ -10,6 +10,7 @@ set(SOURCE_FILES
         OpCode.cpp
         OpCodeMacro.cpp
         PageableMemory.cpp
+        Via.cpp
         )
 
 add_library(m6502_lib STATIC ${SOURCE_FILES} ${HEADER_FILES})

@@ -3,6 +3,7 @@
 #include <array>
 #include "m6502_lib/CPU.cpp"
 #include "m6502_lib/PageableMemory.cpp"
+#include "m6502_lib/Via.cpp"
 #include "App.cpp"
 
 static const uint16_t RAM_SIZE = 0x8000;
@@ -47,8 +48,12 @@ int main(int argc, char *argv[]) {
 
 //    auto app = new App();
 //    app->start();
+
+    auto via = Via(*memory);
+
     auto cpu = CPU(programCounter, *memory, cycleCallback);
     cpu.setBreakLocation(0xfffe);
+    via.initialise();
     for (;;) {
         cpu.run();
         std::cout << std::dec << "cycles:" << cycles << std::endl;
