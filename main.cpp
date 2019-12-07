@@ -27,8 +27,9 @@ std::array<uint8_t, OS_SIZE> loadFile(std::string filename) {
 }
 
 int main(int argc, char *argv[]) {
-    auto os = loadFile("./MOS100");
-    auto basic = loadFile("./BASIC100");
+    auto os = loadFile("./roms/Os12.rom");
+    auto basic = loadFile("./roms/Basic2.rom");
+    auto dfs = loadFile("./roms/DFS-0.9.rom");
 
     std::array<uint8_t, 0x8000> mem={};
     int32_t cycles = 0;
@@ -41,16 +42,17 @@ int main(int argc, char *argv[]) {
     auto memory = new PageableMemory<0x8000>(mem);
     memory->setPageOS(os);
     memory->setPage(basic,0xF);
-    auto programCounter = memory->get16Value(0xFFFE);
+    memory->setPage(dfs,0x0);
+    auto programCounter = 0xD9CD;//memory->get16Value(0xFFFE);
 
-    auto app = new App();
-    app->start();
-//    auto cpu = CPU(programCounter, *memory, cycleCallback);
-//    cpu.setBreakLocation(0xfffe);
-//    for (;;) {
-//        cpu.run();
-//        std::cout << std::dec << "cycles:" << cycles << std::endl;
-//    }
-//    delete memory;
-//    return 0;
+//    auto app = new App();
+//    app->start();
+    auto cpu = CPU(programCounter, *memory, cycleCallback);
+    cpu.setBreakLocation(0xfffe);
+    for (;;) {
+        cpu.run();
+        std::cout << std::dec << "cycles:" << cycles << std::endl;
+    }
+    delete memory;
+    return 0;
 }

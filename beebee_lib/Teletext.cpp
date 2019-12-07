@@ -9,6 +9,8 @@
 class Teletext {
 // Extremely heavily based on jsbeeb and therefore b-em.
 
+// Also see: http://www.bbcbasic.co.uk/bbcwin/manual/bbcwinh.html
+
     static const std::map<uint8_t, std::array<uint8_t, 60>> CHARACTERS;
     constexpr static const std::array<uint32_t, 2> palette = {0xff000000, 0xffffffff};
 

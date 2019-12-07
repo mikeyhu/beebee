@@ -46,6 +46,13 @@ public:
     }
 
     void setValue(uint16_t location, uint8_t value) {
+#ifndef NDEBUG
+        if(location >= 0x7C00 && location <= 0x7FFF) {
+            std::cout << "Mode 7 memory write:" << std::hex << (int)value << " to " << (int)location<<std::endl;
+        } else {
+            std::cout << "memory write:" << std::hex << (int)value << " to " << (int)location<<std::endl;
+        }
+#endif
         if(location<0x8000) {
             memory[location] = value;
         } else if(location>=0xC000) {

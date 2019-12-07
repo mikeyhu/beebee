@@ -167,6 +167,10 @@ class CPU {
     void opArithmeticShiftLeft(bool _) {
         auto setTo = cpuState.getARegister() << 1u;
         cpuState.setCarryFlag(setTo > 0xff);
+#ifndef NDEBUG
+        std::cout << "asl originalA:" << std::hex << (int)cpuState.getARegister() << " setTo:" <<(int)setTo << std::endl;
+#endif
+        cpuState.setFlagsBasedOnValue(setTo);
         cpuState.setARegister(setTo);
     }
 
