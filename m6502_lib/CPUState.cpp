@@ -2,6 +2,9 @@
 #include <string>
 #include <sstream>
 
+#define IRQ_LOW false
+#define IRQ_HIGH true
+
 class CPUState {
     bool carryFlag = false;
     bool zeroFlag = false;
@@ -10,6 +13,7 @@ class CPUState {
     bool decimalFlag = false;
     bool overflowFlag = false;
     bool negativeFlag = false;
+    bool IRQ = IRQ_HIGH;
     uint8_t ARegister = 0;
     uint8_t XRegister = 0;
     uint8_t YRegister = 0;
@@ -174,6 +178,14 @@ public:
 
     bool areProgramCountersEqual() {
         return previousProgramCounter == programCounter;
+    }
+
+    bool isIRQ() const {
+        return IRQ;
+    }
+
+    void setIRQ(bool irq) {
+        IRQ = irq;
     }
 };
 

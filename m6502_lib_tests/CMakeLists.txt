@@ -12,6 +12,7 @@ add_executable(m6502_lib_tests
         CPUTestCompare.cpp
         CPUTestBranch.cpp
         CPUTestStack.cpp
+        CPUTestInterrupt.cpp
         MemoryTest.cpp
         Helpers.cpp
         PageableMemoryTest.cpp

@@ -530,6 +530,14 @@ public:
               }
 
     void runOnce() {
+        if(cpuState.isIRQ() == IRQ_LOW && cpuState.isInterruptDisableFlag() == false) {
+            pushStack16(cpuState.getProgramCounter());
+            pushStack8(cpuState.flagsAsInt());
+            cpuState.setProgramCounter(memory->get16Value(0xFFFE));
+            cpuState.setInterruptDisableFlag(true);
+            cpuState.setIRQ(IRQ_HIGH);
+            return;
+        }
         cpuState.setPreviousProgramCounterFromPC();
         auto opCode = readOpCode();
         opLog = new OpLog(opCode, cpuState.getPreviousProgramCounter());
