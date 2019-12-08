@@ -14,8 +14,8 @@ template<std::size_t SIZE>
 
 class Memory {
 
-
 protected:
+    bool screenRefresh = false;
     std::array<uint8_t, SIZE> memory;
 public:
     explicit Memory(std::array<uint8_t, SIZE> &mem)
@@ -33,6 +33,14 @@ public:
         uint8_t upper = getValue(location);
         uint8_t lower = getValue(location + 1);
         return toUInt16(upper, lower);
+    }
+
+    bool needsScreenRefresh() const {
+        return screenRefresh;
+    }
+
+    void setScreenRefresh(bool screenRefresh) {
+        Memory::screenRefresh = screenRefresh;
     }
 };
 

@@ -18,6 +18,9 @@
 #include "Memory.cpp"
 #endif
 
+#ifndef BEEBEE_VIA
+#define BEEBEE_VIA
+
 template<std::size_t SIZE>
 
 class Via {
@@ -38,3 +41,5 @@ public:
         memory->setValue(0xFE63, 0xFF);
     }
 };
+
+#endif

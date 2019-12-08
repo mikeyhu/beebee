@@ -18,9 +18,16 @@
 
 #endif
 
-#include "Memory.cpp"
 #include "CPUState.cpp"
 #include "OpLog.cpp"
+
+#ifndef BEEBEE_MEMORY
+#include "Memory.cpp"
+
+#endif
+
+#ifndef BEEBEE_CPU
+#define BEEBEE_CPU
 
 template<std::size_t SIZE>
 
@@ -522,43 +529,47 @@ public:
                 cpuState.setPreviousProgramCounterFromPC();
               }
 
-    void run() {
-        for (;;) {
-            cpuState.setPreviousProgramCounterFromPC();
-            auto opCode = readOpCode();
-            opLog = new OpLog(opCode, cpuState.getPreviousProgramCounter());
-            switch (opCode) {
+    void runOnce() {
+        cpuState.setPreviousProgramCounterFromPC();
+        auto opCode = readOpCode();
+        opLog = new OpLog(opCode, cpuState.getPreviousProgramCounter());
+        switch (opCode) {
 #define OPCODE(name, code, function, mode) case name : function(mode());break;
 
 #include "OpCodeMacro.cpp"
 
-                default:
-                    std::cout << "Unknown OpCode:" << std::endl;
+            default:
+                std::cout << "Unknown OpCode:" << std::endl;
 #ifndef NDEBUG
-                    printState(*opLog);
+                printState(*opLog);
 #endif
-                    return;
+                return;
+        }
+        if (cpuState.areProgramCountersEqual()) {
+            std::cout << "Trap found!" << std::endl;
+            if (cpuState.getProgramCounter() != 0x37ce
+                && cpuState.getProgramCounter() != 0x35c9) {
+                return;
+            } else {
+                cpuState.setProgramCounter(cpuState.getProgramCounter() + 2);
             }
+        }
+#ifndef NDEBUG
+        opLog->addToLog(cpuState.ToString());
+        printState(*opLog);
+#endif
+        cycleCallback();
+        delete opLog;
+    }
+
+    void run() {
+        for (;;) {
+            runOnce();
             if (doBreak) {
                 printState(*opLog);
                 doBreak = false;
                 return;
             }
-            if (cpuState.areProgramCountersEqual()) {
-                std::cout << "Trap found!" << std::endl;
-                if (cpuState.getProgramCounter() != 0x37ce
-                    && cpuState.getProgramCounter() != 0x35c9) {
-                    return;
-                } else {
-                    cpuState.setProgramCounter(cpuState.getProgramCounter() + 2);
-                }
-            }
-#ifndef NDEBUG
-            opLog->addToLog(cpuState.ToString());
-            printState(*opLog);
-#endif
-            cycleCallback();
-            delete opLog;
         }
     }
 
@@ -591,3 +602,5 @@ public:
                   << " SP:" << (int) stackPointer << std::endl;
     }
 };
+
+#endif

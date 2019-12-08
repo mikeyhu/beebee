@@ -58,6 +58,9 @@ public:
     }
 
     void setValue(uint16_t location, uint8_t value) {
+        if(location >= 0x7C00 && location <= 0x7FFF) {
+            screenRefresh=true;
+        }
 #ifndef NDEBUG
         if(location >= 0x7C00 && location <= 0x7FFF) {
             std::cout << "Mode 7 memory write:" << std::hex << (int)value << " to " << (int)location<<std::endl;
