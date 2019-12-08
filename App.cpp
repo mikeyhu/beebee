@@ -58,7 +58,7 @@ public:
 
         SDL_Event e;
         while (!quit) {
-            cpu->runOnce();
+            cpu->runUntilInteruptable();
             if(memory->needsScreenRefresh()) {
                 renderScreen();
                 memory->setScreenRefresh(false);

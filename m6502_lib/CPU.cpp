@@ -562,6 +562,20 @@ public:
         delete opLog;
     }
 
+    void runUntilInteruptable() {
+        for(;;) {
+            runOnce();
+            if (doBreak) {
+                printState(*opLog);
+                doBreak = false;
+                return;
+            }
+            if (!cpuState.isInterruptDisableFlag()) {
+                return;
+            }
+        }
+    }
+
     void run() {
         for (;;) {
             runOnce();

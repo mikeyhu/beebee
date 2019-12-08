@@ -670,3 +670,23 @@ TEST(CPUGeneral, SuBtractwithCarry_Z) {
     EXPECT_FALSE(cpu.getCPUState().isZeroFlag());
     EXPECT_FALSE(cpu.getCPUState().isOverflowFlag());
 }
+
+TEST(CPUGeneral, runOnce) {
+    std::array<uint8_t, 6> mem = {LoaDAcc_I, 0xff, LoaDX_I, 0xff};
+    auto memory = Memory(mem);
+    auto cpu = CPU(0, memory, cycleCallback);
+    cpu.runOnce();
+    EXPECT_EQ(0xff, cpu.getCPUState().getARegister());
+    EXPECT_EQ(0x00, cpu.getCPUState().getXRegister());
+}
+
+TEST(CPUGeneral, runUntilInteruptable) {
+    std::array<uint8_t, 7> mem = {LoaDAcc_I, 0xff, LoaDX_I, 0xff, CLearInterrupt, LoaDY_I, 0xff};
+    auto memory = Memory(mem);
+    auto cpu = CPU(0, memory, cycleCallback);
+    cpu.getCPUState().setInterruptDisableFlag(true);
+    cpu.runUntilInteruptable();
+    EXPECT_EQ(0xff, cpu.getCPUState().getARegister());
+    EXPECT_EQ(0xff, cpu.getCPUState().getXRegister());
+    EXPECT_EQ(0x00, cpu.getCPUState().getYRegister());
+}
